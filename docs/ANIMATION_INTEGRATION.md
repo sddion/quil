@@ -1,31 +1,59 @@
-# Animation Integration - Phase 9
+# Animation Integration Guide
 
-## Overview
+This guide explains how to integrate and manage pre-rendered bitmap animations in the Quil firmware. The animations are stored in PROGMEM to conserve RAM and are played back in a non-blocking manner.
 
-Integrated pre-rendered bitmap animations stored in PROGMEM for memory-efficient playback on ESP32/ESP8266.
+## Animation System Overview
 
-## Animations Available
+The animation system is managed by the `animation_manager` module. It is responsible for initializing, playing, stopping, and updating animations.
 
-| Animation | Frames | Use Case |
-|-----------|--------|----------|
-| ANIM_BOOT | 28 | Boot sequence on startup |
-| ANIM_THINKING | 56 | AI processing, chat mode |
-| ANIM_ANGRY | 34 | Error states, negative emotion |
-| ANIM_THUGLIFE | 36 | Theme preview, easter egg |
+### Playback Flow
 
-## Module: animation_manager
+The following diagram illustrates the animation playback flow:
 
-### Functions
-
-```cpp
-void anim_init();                    // Initialize animation system
-void anim_play(AnimationType type);  // Start animation
-void anim_stop();                    // Stop current animation
-void anim_update();                  // Update frame (call in loop)
-bool anim_is_playing();              // Check playback status
+```mermaid
+graph TD
+    A[Mode or System Event] -->|anim_play(ANIM_TYPE)| B{Animation Manager};
+    B -->|Is an animation requested?| C{Yes};
+    C --> D[Set Active Animation];
+    D --> E[Reset Frame Counter];
+    E --> F{Main Loop};
+    F -->|anim_update()| G{Time to show next frame?};
+    G -->|Yes| H[Load frame from PROGMEM];
+    H --> I[Draw frame to display buffer];
+    I --> F;
 ```
 
-### Animation Types
+## Available Animations
+
+| Animation | Frames | Use Case |
+|---|---|---|
+| `ANIM_BOOT` | 28 | Played once on device startup. |
+| `ANIM_THINKING` | 56 | Shown when the device is processing a request. |
+| `ANIM_ANGRY` | 34 | Displayed in response to an error or negative event. |
+| `ANIM_THUGLIFE` | 36 | An easter-egg theme. |
+
+## `animation_manager` Module
+
+### Public Functions
+
+```cpp
+// Initializes the animation system.
+void anim_init();
+
+// Starts playing an animation of the given type.
+void anim_play(AnimationType type);
+
+// Stops the currently playing animation.
+void anim_stop();
+
+// Updates the animation frame. Should be called in the main loop.
+void anim_update();
+
+// Returns true if an animation is currently playing.
+bool anim_is_playing();
+```
+
+### `AnimationType` Enum
 
 ```cpp
 typedef enum {
@@ -37,175 +65,57 @@ typedef enum {
 } AnimationType;
 ```
 
-## Implementation
+## Implementation Details
 
 ### Storage Format
 
-Each animation stored as PROGMEM arrays:
-- Individual frames: `_thinking_000[]`, `_thinking_001[]`, etc.
-- Frame pointer array: `thinking_frames[]`
-- Frame count: `THINKING_FRAMES` macro
+Each animation is stored as a series of PROGMEM arrays:
+
+-   **Frame Data**: The raw bitmap data for each frame (e.g., `_thinking_000[]`, `_thinking_001[]`).
+-   **Frame Pointer Array**: An array of pointers to the individual frame data arrays (e.g., `thinking_frames[]`).
+-   **Frame Count**: A macro that defines the total number of frames in the animation (e.g., `THINKING_FRAMES`).
 
 ### Frame Playback
 
-- **Frame rate:** 20 FPS (50ms delay)
-- **Non-blocking:** Uses `millis()` timing
-- **Loop behavior:** Auto-loops continuously
-- **Display:** Direct `hal_display` integration
+-   **Frame Rate**: 20 FPS (50ms delay between frames).
+-   **Non-Blocking**: Uses `millis()` for timing to avoid blocking the main loop.
+-   **Looping**: Animations loop automatically until `anim_stop()` is called.
 
-### Memory Usage
+## How to Add a New Animation
 
-Total PROGMEM allocation:
-- Thinking: ~56KB (56 frames × 1KB)
-- Angry: ~34KB (34 frames × 1KB)
-- Thuglife: ~36KB (36 frames × 1KB)
-- Boot: ~28KB (28 frames × 1KB)
+1.  **Prepare Your Bitmaps**:
+    *   Create a sequence of bitmap images for your animation.
+    *   Make sure they are the correct size and format for the display.
 
-**Total:** ~154KB PROGMEM
+2.  **Convert to C Arrays**:
+    *   Use a tool to convert your bitmap images into C arrays.
+    *   Place the generated `.cpp` and `.h` files in a new directory under `firmware/assets/bitmaps_arrays/`. For example: `firmware/assets/bitmaps_arrays/new_animation/`.
 
-## Integration Points
+3.  **Update `animation_manager.h`**:
+    *   Add a new entry to the `AnimationType` enum for your animation:
+        ```cpp
+        typedef enum {
+          // ... existing animations
+          ANIM_NEW_ANIMATION
+        } AnimationType;
+        ```
 
-### Boot Sequence (main.cpp)
+4.  **Update `animation_manager.cpp`**:
+    *   Include the header file for your new animation:
+        ```cpp
+        #include "new_animation.h"
+        ```
+    *   In the `anim_play()` function, add a `case` for your new animation to the `switch` statement. This tells the animation manager how to load your animation's data.
 
-```cpp
-anim_init();
-anim_play(ANIM_BOOT);
-while(anim_is_playing()) {
-  anim_update();
-  delay(10);
-}
-```
-
-### Main Loop (main.cpp)
-
-```cpp
-if (anim_is_playing()) {
-  anim_update();
-  delay(10);
-  return;  // Skip mode rendering
-}
-```
-
-### Mode Triggers
-
-**Chat Mode (thinking animation):**
-```cpp
-if (wake_detect()) {
-  anim_play(ANIM_THINKING);
-}
-```
-
-**Error States (angry animation):**
-```cpp
-if (error_occurred) {
-  anim_play(ANIM_ANGRY);
-}
-```
-
-**Theme Preview (thuglife):**
-```cpp
-if (theme == THEME_THUGLIFE) {
-  anim_play(ANIM_THUGLIFE);
-}
-```
-
-## File Structure
-
-```
-firmware/
-├── assets/
-│   └── bitmaps_arrays/
-│       ├── thinking/
-│       │   ├── thinking.h       (header with externs)
-│       │   └── thinking.cpp     (frame data)
-│       ├── angry/
-│       │   ├── angry.h
-│       │   └── angry.cpp
-│       ├── thuglife/
-│       │   ├── thuglife.h
-│       │   └── thuglife.cpp
-│       └── bootanimation/
-│           ├── bootanimation.h
-│           └── bootanimation.cpp
-└── src/
-    └── modules/
-        ├── animation_manager.h
-        └── animation_manager.cpp
-```
-
-## Build Configuration
-
-### platformio.ini Updates
-
-```ini
-build_flags = 
-    -I firmware/assets/bitmaps_arrays
-build_src_filter = +<*> +<../../assets/bitmaps_arrays/*>
-```
-
-## Performance
-
-- **Frame load time:** <1ms (PROGMEM read)
-- **Display update:** ~5ms (I2C transfer)
-- **Total frame time:** ~6ms actual, 50ms target
-- **CPU usage:** Minimal (non-blocking)
-- **Heap usage:** 0 bytes (all static/PROGMEM)
-
-## Stopping Animations
-
-Animations auto-loop by default. To stop:
-
-```cpp
-anim_stop();  // Manual stop
-```
-
-Or animations auto-stop on mode change when loop checks `anim_is_playing()`.
-
-## Adding New Animations
-
-1. Create bitmap array in `assets/bitmaps_arrays/newAnim/`
-2. Generate `newAnim.h` with externs
-3. Add `ANIM_NEWANIM` to enum in `animation_manager.h`
-4. Add case to switch in `anim_play()`
-5. Include header in `animation_manager.cpp`
+5.  **Update Build Configuration**:
+    *   Ensure that the `platformio.ini` file is configured to include your new animation files in the build. The existing `build_src_filter` should already cover this if you've placed your files in the correct directory.
 
 ## Troubleshooting
 
-**Animation not displaying:**
-- Check PROGMEM includes: `#include <avr/pgmspace.h>`
-- Verify frame count matches array size
-- Check `build_src_filter` in platformio.ini
-
-**Flickering:**
-- Frame delay too short
-- Increase `frame_delay` in animation_manager.cpp
-
-**Memory errors:**
-- Too many animations loaded
-- Use `pgm_read_ptr()` for PROGMEM access
-- Check available flash: `pio run -t size`
-
-## Build Verification
-
-```bash
-# Build for ESP32
-pio run -e esp32
-
-# Check binary size
-pio run -e esp32 -t size
-
-# Build for ESP8266
-pio run -e esp8266
-
-# Verify binaries exist
-ls -lh .pio/build/esp32/firmware.bin
-ls -lh .pio/build/esp8266/firmware.bin
-```
-
-## Future Enhancements
-
-1. **Variable frame rates** - Per-animation speed control
-2. **One-shot playback** - Non-looping option
-3. **Blend transitions** - Fade between animations
-4. **Compression** - RLE encoding for smaller PROGMEM
-5. **Runtime loading** - Load from SD card or SPIFFS
+*   **Animation Not Displaying**:
+    *   Verify that the `build_src_filter` in `platformio.ini` includes the path to your animation files.
+    *   Double-check that the frame count in your animation's header file matches the actual number of frames.
+*   **Flickering**:
+    *   This can happen if the frame delay is too short. Try increasing the `frame_delay` value in `animation_manager.cpp`.
+*   **Memory Errors**:
+    *   If you run out of PROGMEM, you may need to reduce the number of frames in your animations or optimize their size. You can check the available flash space by running `pio run -t size`.

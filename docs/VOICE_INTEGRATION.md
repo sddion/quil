@@ -1,189 +1,95 @@
-# Voice & LLM Integration - Phase 8
+# Voice and LLM Integration Guide
 
-## Architecture
+This document describes the architecture and implementation of the voice and Large Language Model (LLM) integration in the Quil firmware. This system enables voice-based interaction with the device, allowing users to speak commands and receive audible responses.
 
-```
-[ESP32 Firmware]
-├── I2S Mic (INMP441) → voice_manager
-├── Wake Word Detection → wake_manager
-├── Audio Streaming → llm_bridge (Serial/WebSocket)
-└── I2S Speaker (MAX98357A) ← Response playback
+## System Architecture
 
-[Bridge App] (Node.js/Python - separate)
-├── Receives audio stream from ESP32
-├── OpenAI Whisper → Speech-to-Text
-├── OpenAI GPT-4o-mini → Generate response
-├── OpenAI TTS → Text-to-Speech
-└── Sends audio response back to ESP32
-```
+The voice integration is split between the ESP32 firmware and a separate "bridge" application that runs on a host computer.
 
-## New Modules
+*   **ESP32 Firmware**: Handles wake word detection, audio capture, and playback of responses.
+*   **Bridge App**: Receives audio from the ESP32, processes it using cloud-based AI services (OpenAI), and sends the response back to the device.
 
-### voice_manager.{h,cpp}
-Manages I2S audio capture and playback:
-- `voice_init()` - Initialize mic and speaker
-- `voice_start_listening()` - Begin audio capture
-- `voice_stop_listening()` - Stop capture
-- `voice_is_listening()` - Check capture state
-- `voice_read_buffer()` - Read mic data
-- `voice_play_response()` - Play audio response
-- `voice_get_rms()` - Get audio level (VAD)
+### Voice Processing Pipeline
 
-### wake_manager.{h,cpp}
-Wake word detection ("Hey Quil"):
-- `wake_init()` - Initialize detector
-- `wake_detect()` - Check for wake phrase (RMS-based)
-- `wake_set_threshold()` - Adjust sensitivity
-- `wake_get_confidence()` - Get detection confidence
+The following diagram illustrates the end-to-end voice processing pipeline:
 
-### llm_bridge.{h,cpp}
-Communication with host bridge app:
-- `bridge_init()` - Initialize serial bridge
-- `bridge_send_audio()` - Stream audio to host
-- `bridge_send_command()` - Send control signals
-- `bridge_handle_response()` - Receive AI responses
-- `bridge_has_response()` - Check response ready
+```mermaid
+sequenceDiagram
+    participant User
+    participant ESP32
+    participant Bridge App
+    participant OpenAI
 
-## Main Loop Integration
-
-```cpp
-// Wake word detection
-if (wake_detect()) {
-  bridge_send_command("wake_quil");
-  voice_start_listening();
-}
-
-// Audio streaming
-if (voice_is_listening()) {
-  uint8_t audio[256];
-  size_t len = voice_read_buffer(audio, sizeof(audio));
-  if (len > 0) {
-    bridge_send_audio(audio, len);
-  }
-}
-
-// Response handling
-bridge_handle_response();
+    User->>ESP32: Speaks Wake Word
+    ESP32->>Bridge App: Wake Word Detected
+    User->>ESP32: Speaks Command
+    ESP32->>Bridge App: Streams Audio
+    Bridge App->>OpenAI: Speech-to-Text Request
+    OpenAI-->>Bridge App: Transcribed Text
+    Bridge App->>OpenAI: Chat Completion Request
+    OpenAI-->>Bridge App: LLM Response
+    Bridge App->>OpenAI: Text-to-Speech Request
+    OpenAI-->>Bridge App: Synthesized Audio
+    Bridge App->>ESP32: Streams Audio Response
+    ESP32->>User: Plays Audio Response
 ```
 
-## Wake Word Detection
+## Firmware Modules
 
-**Simple RMS-based approach:**
-1. Monitor audio RMS level
-2. When RMS > threshold (500.0f default)
-3. Trigger wake event
-4. Send `{"event":"wake_quil"}` to bridge
+### `voice_manager`
 
-**Future enhancement:** MFCC fingerprint matching
+Manages I2S audio capture and playback.
+
+-   `voice_init()`: Initializes the microphone and speaker.
+-   `voice_start_listening()`: Begins capturing audio from the microphone.
+-   `voice_stop_listening()`: Stops the audio capture.
+-   `voice_read_buffer()`: Reads a chunk of audio data from the microphone.
+-   `voice_play_response()`: Plays back an audio response through the speaker.
+
+### `wake_manager`
+
+Detects the "Hey Quil" wake word.
+
+-   `wake_init()`: Initializes the wake word detector.
+-   `wake_detect()`: Checks for the wake word in the audio stream.
+-   `wake_set_threshold()`: Adjusts the sensitivity of the detector.
+
+### `llm_bridge`
+
+Handles communication with the bridge application.
+
+-   `bridge_init()`: Initializes the serial communication bridge.
+-   `bridge_send_audio()`: Streams audio data to the bridge.
+-   `bridge_handle_response()`: Receives and processes responses from the bridge.
+
+## Bridge Application
+
+The bridge application is a crucial component of the voice integration system. It acts as an intermediary between the ESP32 and the cloud-based AI services.
+
+### Responsibilities
+
+1.  **Receives Audio**: Listens for incoming audio data from the ESP32 over a serial connection.
+2.  **Speech-to-Text**: Sends the audio data to OpenAI's Whisper API to be transcribed into text.
+3.  **LLM Interaction**: Forwards the transcribed text to a large language model (e.g., GPT-4o-mini) to generate a response.
+4.  **Text-to-Speech**: Uses OpenAI's TTS API to convert the LLM's text response into audio.
+5.  **Sends Response**: Streams the synthesized audio back to the ESP32 for playback.
+
+This architecture keeps the resource-intensive AI processing off of the microcontroller, allowing the ESP32 to focus on real-time tasks.
 
 ## Communication Protocol
 
-### ESP32 → Bridge
+### ESP32 to Bridge
 
-**Wake event:**
-```json
-{"event":"wake_quil"}
-```
+*   **Wake Word**: A JSON message is sent to signal that the wake word has been detected.
+    ```json
+    {"event": "wake_quil"}
+    ```
+*   **Audio Stream**: Raw audio data is sent as a binary stream.
 
-**Audio stream:**
-Binary data via Serial.write()
+### Bridge to ESP32
 
-### Bridge → ESP32
-
-**Audio response:**
-Binary PCM/WAV data via Serial
-
-## Bridge App Implementation (Future)
-
-### Speech-to-Text (Whisper)
-```javascript
-const transcription = await openai.audio.transcriptions.create({
-  file: audioFile,
-  model: "whisper-1"
-});
-```
-
-### Text Generation (GPT-4o-mini)
-```javascript
-const response = await openai.chat.completions.create({
-  model: "gpt-4o-mini",
-  messages: [
-    { role: "system", content: "You are Quil, a friendly desktop AI companion." },
-    { role: "user", content: transcription.text }
-  ]
-});
-```
-
-### Text-to-Speech
-```javascript
-const speech = await openai.audio.speech.create({
-  model: "gpt-4o-mini-tts",
-  voice: "verse",
-  input: response.choices[0].message.content
-});
-```
-
-## Mode Integration
-
-### mode_chat.cpp
-Updated to use voice_manager:
-- `mode_chat_init()` → calls `voice_init()`
-- `mode_chat_start_listen()` → calls `voice_start_listening()`
-- `mode_chat_toggle_mute()` → toggles voice capture
-- Display shows real-time listening state
-
-## Performance
-
-- **Buffer size:** 512 bytes audio buffer
-- **Sample rate:** 16 kHz (I2S config)
-- **Bits per sample:** 32-bit (mic), 16-bit (speaker)
-- **Latency:** ~100ms mic → bridge
-- **Wake detection:** RMS calculation every loop cycle
-
-## Testing
-
-1. **Wake word test:**
-   - Speak "Hey Quil" near mic
-   - Check serial: `{"event":"wake_quil"}`
-   
-2. **Audio streaming:**
-   - Monitor serial for audio data after wake
-   - Verify continuous stream while listening
-
-3. **Response playback:**
-   - Bridge sends audio via serial
-   - Speaker should play response
-
-## Configuration
-
-**Wake threshold:**
-```cpp
-wake_set_threshold(500.0f);  // Adjust sensitivity
-```
-
-**Audio buffer:**
-Defined in `voice_manager.cpp`:
-```cpp
-static uint8_t audio_buffer[512];
-```
+*   **Audio Response**: The synthesized audio response is sent as a binary stream of PCM or WAV data.
 
 ## ESP8266 Support
 
-Voice features disabled on ESP8266 (no I2S):
-- All functions return empty/false
-- No audio capture or playback
-- Bridge still functional for future use
-
-## Security Notes
-
-- Audio streamed unencrypted over serial (local only)
-- Consider encryption for network-based bridge
-- API keys stored in bridge app, not on ESP32
-
-## Future Enhancements
-
-1. **Advanced wake word:** MFCC fingerprint matching
-2. **VAD improvement:** Energy-based voice activity detection
-3. **Noise reduction:** Pre-processing before streaming
-4. **Multiple wake words:** Support custom phrases
-5. **Local TTS:** On-device synthesis for common phrases
+The voice integration features are **not supported on the ESP8266** due to its lack of I2S hardware. On the ESP8266, the voice-related functions are disabled and will not have any effect.
