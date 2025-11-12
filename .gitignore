@@ -1,0 +1,57 @@
+# General
+.DS_Store
+.vscode/
+*~
+*.bak
+*.log
+*.tmp
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Arduino / ESP-IDF
+.pio/
+*.ino.bin
+*.ino.hex
+*.elf
+*.map
+*.lst
+*.su
+*.s
+*.o
+*.d
+*.gcno
+*.gcda
+*.gcov
+*.ipk
+build/
+debug/
+release/
+tmp/
+tests/
+.esp-idf/
+.esp-idf-components/
+.esp-idf-projects/
+.esp-idf-tools/     
+.esp-idf-plugins/
+.esp-idf-scripts/
+.esp-idf-env/
+.esp-idf-cache/
+
+# PlatformIO
+.pio/
+
+# KiCad
+*.bck
+*.dcm
+*.net
+*.pro.bak
+*-cache.lib
+*-rescue.lib
+fp-lib-table
+sym-lib-table
+*.kicad_pcb-bak
+*.kicad_sch-bak
+*.kicad_wks
+*.kicad_prl
+kicad-backups/

@@ -1,0 +1,12 @@
+#pragma once
+#include <Arduino.h>
+
+void ntp_init();
+void ntp_update();
+String ntp_get_time();
+String ntp_get_date();
+String ntp_get_day();
+int ntp_get_hour();
+int ntp_get_minute();
+int ntp_get_second();
+bool ntp_is_synced();
