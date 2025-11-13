@@ -9,7 +9,8 @@
 ****************************************************/
 
 #include <pgmspace.h>
-#include <pgmspace.h>
+#include "thinking.h"
+
 // 'thinking_000', 128x64px
 const unsigned char _thinking_000 [] PROGMEM = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 

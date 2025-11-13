@@ -12,18 +12,28 @@ bool wifi_init() {
 }
 
 bool wifi_connect(const char* ssid, const char* pass) {
+  Serial.printf("Attempting to connect to SSID: %s\n", ssid);
   WiFi.begin(ssid, pass);
   unsigned long start = millis();
   while (WiFi.status() != WL_CONNECTED) {
-    if (millis() - start > WIFI_TIMEOUT_MS) return false;
+    Serial.printf("WiFi Status: %d\n", WiFi.status());
+    if (millis() - start > WIFI_TIMEOUT_MS) {
+      Serial.println("WiFi connection timed out.");
+      return false;
+    }
     delay(100);
   }
+  Serial.println("WiFi connected successfully.");
   return true;
 }
 
 bool wifi_start_ap() {
+  Serial.println("Starting AP mode...");
   WiFi.mode(WIFI_AP);
-  return WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASS);
+  bool result = WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASS);
+  Serial.printf("AP mode started: %s\n", result ? "true" : "false");
+  Serial.printf("AP SSID: %s, Password: %s\n", WIFI_AP_SSID, WIFI_AP_PASS);
+  return result;
 }
 
 bool wifi_is_connected() {

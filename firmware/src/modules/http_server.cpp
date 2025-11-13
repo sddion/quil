@@ -37,6 +37,8 @@ void handle_save() {
   
   config_save_wifi(ssid.c_str(), pass.c_str());
   server.send(200, "text/plain", "OK");
+  delay(1000);
+  ESP.restart();
 }
 
 void http_init() {
@@ -90,6 +92,8 @@ void handle_save() {
   
   config_save_wifi(ssid.c_str(), pass.c_str());
   server.send(200, "text/plain", "OK");
+  delay(1000);
+  ESP.restart();
 }
 
 void http_init() {

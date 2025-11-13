@@ -46,16 +46,4 @@ extern const unsigned char _angry_039[] PROGMEM;
 extern const unsigned char _angry_040[] PROGMEM;
 extern const unsigned char _angry_041[] PROGMEM;
 
-static const unsigned char* const angry_frames[] PROGMEM = {
-  _angry_000, _angry_001, _angry_002, _angry_003,
-  _angry_004, _angry_005, _angry_006, _angry_007,
-  _angry_008, _angry_009, _angry_010, _angry_011,
-  _angry_012, _angry_013, _angry_014, _angry_015,
-  _angry_016, _angry_017, _angry_018, _angry_019,
-  _angry_020, _angry_021, _angry_022, _angry_023,
-  _angry_024, _angry_025, _angry_026, _angry_027,
-  _angry_028, _angry_029, _angry_030, _angry_031,
-  _angry_032, _angry_033, _angry_034, _angry_035,
-  _angry_036, _angry_037, _angry_038, _angry_039,
-  _angry_040, _angry_041
-};
+extern const unsigned char* const angry_frames[] PROGMEM = {};

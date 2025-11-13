@@ -9,7 +9,7 @@
 ****************************************************/
 
 #include <pgmspace.h>
-#include <pgmspace.h>
+#include "angry.h"
 
 // 'angry_000', 128x64px
 const unsigned char _angry_000 [] PROGMEM = {

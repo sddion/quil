@@ -72,22 +72,4 @@ extern const unsigned char _thinking_065[] PROGMEM;
 extern const unsigned char _thinking_066[] PROGMEM;
 extern const unsigned char _thinking_067[] PROGMEM;
 
-static const unsigned char* const thinking_frames[] PROGMEM = {
-  _thinking_000, _thinking_001, _thinking_002, _thinking_003,
-  _thinking_004, _thinking_005, _thinking_006, _thinking_007,
-  _thinking_008, _thinking_009, _thinking_010, _thinking_011,
-  _thinking_012, _thinking_013, _thinking_014, _thinking_015,
-  _thinking_016, _thinking_017, _thinking_018, _thinking_019,
-  _thinking_020, _thinking_021, _thinking_022, _thinking_023,
-  _thinking_024, _thinking_025, _thinking_026, _thinking_027,
-  _thinking_028, _thinking_029, _thinking_030, _thinking_031,
-  _thinking_032, _thinking_033, _thinking_034, _thinking_035,
-  _thinking_036, _thinking_037, _thinking_038, _thinking_039,
-  _thinking_040, _thinking_041, _thinking_042, _thinking_043,
-  _thinking_044, _thinking_045, _thinking_046, _thinking_047,
-  _thinking_048, _thinking_049, _thinking_050, _thinking_051,
-  _thinking_052, _thinking_053, _thinking_054, _thinking_055,
-  _thinking_056, _thinking_057, _thinking_058, _thinking_059,
-  _thinking_060, _thinking_061, _thinking_062, _thinking_063,
-  _thinking_064, _thinking_065, _thinking_066, _thinking_067
-};
+extern const unsigned char* const  thinking_frames[] PROGMEM = {};

@@ -31,13 +31,6 @@
 #define NTP_OFFSET_SEC 0
 #define NTP_UPDATE_MS 3600000  // Update every hour
 
-// Display themes
-typedef enum {
-  THEME_CLASSIC = 0,
-  THEME_MINIMAL = 1,
-  THEME_CYBER = 2
-} DisplayTheme_t;
-
 // Audio I2S pins (ESP32 only)
 #ifdef ESP32
 #define I2S_MIC_BCK 26
