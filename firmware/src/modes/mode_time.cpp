@@ -1,4 +1,5 @@
 #include "mode_time.h"
+#include "config.h"
 #include "hal/hal_display.h"
 #include "modules/ntp_client.h"
 #include "modules/config_store.h"
@@ -27,6 +28,13 @@ static DisplayTheme_t currentThemeType = THEME_BOLD;
 void mode_time_init() {
   currentTheme = &boldTheme;
   ntp_init();
+  
+  // Load and apply timezone offset
+  int tz_offset = NTP_OFFSET_SEC;
+  if (config_load_timezone(&tz_offset)) {
+    ntp_set_timezone(tz_offset);
+  }
+  
   battery_init();
   uint8_t theme_val = 0;
   if (config_load_theme(&theme_val)) {

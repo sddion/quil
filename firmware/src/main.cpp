@@ -18,7 +18,7 @@
 #include "modules/llm_bridge.h"
 #include "modules/animation_manager.h"
 #include "modules/battery_manager.h"
-#include "hal/hal_mpr121.h"
+#include "hal/hal_ttp223.h"
 #include "modes/mode_time.h"
 #include "modes/mode_music.h"
 #include "modes/mode_chat.h"
@@ -40,6 +40,12 @@ void setup() {
   state_init();
   gesture_init();
   actions_init();
+  
+  // Load and apply display contrast
+  uint8_t contrast = 128;
+  if (config_load_contrast(&contrast)) {
+    hal_display_set_contrast(contrast);
+  }
   
   // Initialize WiFi and load saved credentials
   wifi_init();
@@ -69,8 +75,11 @@ void setup() {
     // No saved credentials and no defaults - start AP mode for initial setup
     Serial.println("[Setup] No saved credentials - starting AP mode");
     wifi_start_ap();
-    http_init();
   }
+  
+  // Always start HTTP server regardless of WiFi connection status
+  // This allows web interface access once WiFi connects (even if connection was delayed)
+  http_init();
   
   ota_init();
   voice_init();
@@ -97,6 +106,7 @@ void setup() {
   mode_time_force_render();
   
   Serial.println("Quil ready");
+  Serial.println("[HTTP] Web interface available at device IP when connected");
 }
 
 void loop() {
@@ -108,10 +118,13 @@ void loop() {
   ota_handle();
   http_handle();
   
-  uint16_t touch = hal_mpr121_read_touched();
-  GestureType gest = gesture_detect(touch, millis());
-  if (gest != GESTURE_NONE) {
-    actions_handle(gest, state_get_mode());
+  hal_ttp223_update();
+  
+  if (hal_ttp223_has_event(TOUCH_SENSOR_A) || hal_ttp223_has_event(TOUCH_SENSOR_B) || hal_ttp223_has_gesture()) {
+    GestureType gest = gesture_detect(0, millis());
+    if (gest != GESTURE_NONE) {
+      actions_handle(gest, state_get_mode());
+    }
   }
   
   if (wake_detect()) {

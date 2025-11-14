@@ -14,8 +14,7 @@
 #define I2C_SCL 5  // D1
 #endif
 
-// MPR121 Touch sensor
-#define MPR121_ADDR 0x5A
+
 
 // Diagnostics
 #define HEAP_CHECK_MS 5000

@@ -1,32 +1,37 @@
 #include "RetroTheme.h"
 #include "config.h"
 #include "oled_theme.h"
+#include "../fonts/Cousine_Bold_10.h"
+#include "../fonts/Roboto_Mono_Medium_6.h"
 
 void RetroTheme::renderTime(Adafruit_SSD1306& disp, String time, String date, String day) {
   disp.drawBitmap(0, 0, oled_theme_retro, DISPLAY_WIDTH, DISPLAY_HEIGHT, SSD1306_WHITE); // Draw the base bitmap
   
-  // Black background - use WHITE text
-  disp.setTextSize(2);
-  disp.setCursor(6, 6);
+  // Black background - use WHITE text with custom fonts
+  disp.setFont(&Cousine_Bold_10);
   disp.setTextColor(SSD1306_WHITE);
+  disp.setCursor(6, 14);
   disp.print(time.c_str());
+  disp.setFont(); // Reset to default
   
-  disp.setTextSize(1);
-  disp.setCursor(6, 28);
+  disp.setFont(&Roboto_Mono_Medium_6);
   disp.setTextColor(SSD1306_WHITE);
+  disp.setCursor(6, 32);
   disp.print(day.c_str());
   
-  disp.setCursor(6, 38);
+  disp.setCursor(6, 42);
   disp.print(date.c_str());
+  disp.setFont(); // Reset to default
 }
 
 void RetroTheme::renderWeather(Adafruit_SSD1306& disp, const WeatherData& data) {
   if (data.success) {
-    disp.setTextSize(1);
+    disp.setFont(&Roboto_Mono_Medium_6);
     disp.setTextColor(SSD1306_WHITE); // White text on black background
     String temp_c = String(data.temperature_c, 0) + "C";
-    disp.setCursor(104, 28);
+    disp.setCursor(104, 32);
     disp.print(temp_c.c_str());
+    disp.setFont(); // Reset to default
   }
 }
 

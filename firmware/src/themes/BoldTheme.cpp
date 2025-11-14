@@ -1,23 +1,26 @@
 #include "BoldTheme.h"
 #include "config.h"
 #include "oled_theme.h"
+#include "../fonts/Cousine_Bold_10.h"
 
 void BoldTheme::renderTime(Adafruit_SSD1306& disp, String time, String date, String day) {
   disp.drawBitmap(0, 0, oled_theme_bold, DISPLAY_WIDTH, DISPLAY_HEIGHT, SSD1306_WHITE); // Draw the base bitmap
   
-  // Time in header (black background) - use WHITE text
-  disp.setTextSize(2);
-  disp.setCursor(4, 4);
+  // Time in header (black background) - use WHITE text with custom font
+  disp.setFont(&Cousine_Bold_10);
   disp.setTextColor(SSD1306_WHITE);
+  disp.setCursor(4, 14);
   disp.print(time.c_str());
+  disp.setFont(); // Reset to default font
   
   // Day and Date in white area - use BLACK text (clear pixels)
-  disp.setTextSize(1);
+  disp.setFont(&Cousine_Bold_10);
   disp.setTextColor(SSD1306_BLACK);
-  disp.setCursor(30, 30);
+  disp.setCursor(30, 38);
   disp.print(day.c_str());
-  disp.setCursor(30, 44);
+  disp.setCursor(30, 52);
   disp.print(date.c_str());
+  disp.setFont(); // Reset to default font
 }
 
 void BoldTheme::renderWeather(Adafruit_SSD1306& disp, const WeatherData& data) {

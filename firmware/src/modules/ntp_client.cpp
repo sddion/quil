@@ -11,6 +11,7 @@ static WiFiUDP ntpUDP;
 static NTPClient timeClient(ntpUDP, NTP_SERVER, NTP_OFFSET_SEC, 60000);
 
 static bool synced = false;
+static int current_offset = NTP_OFFSET_SEC;
 
 void ntp_init() {
   timeClient.begin();
@@ -24,15 +25,20 @@ void ntp_update() {
   }
 }
 
+void ntp_set_timezone(int offset_sec) {
+  current_offset = offset_sec;
+  timeClient.setTimeOffset(offset_sec);
+  timeClient.forceUpdate();
+}
+
 String ntp_get_time() {
-  if (!synced || !timeClient.isTimeSet()) return "--:--:--";
+  if (!synced || !timeClient.isTimeSet()) return "--:--";
   
   int hr = timeClient.getHours();
   int mn = timeClient.getMinutes();
-  int sc = timeClient.getSeconds();
   
   char buf[16];
-  snprintf(buf, sizeof(buf), "%02d:%02d:%02d", hr, mn, sc);
+  snprintf(buf, sizeof(buf), "%02d:%02d", hr, mn);
   return String(buf);
 }
 

@@ -1,34 +1,39 @@
 #include "MinimalTheme.h"
 #include "config.h"
 #include "oled_theme.h"
+#include "../fonts/Open_Sans_ExtraBold_8.h"
+#include "../fonts/Roboto_Mono_Medium_6.h"
 
 void MinimalTheme::renderTime(Adafruit_SSD1306& disp, String time, String date, String day) {
   disp.drawBitmap(0, 0, oled_theme_minimal, DISPLAY_WIDTH, DISPLAY_HEIGHT, SSD1306_WHITE); // Draw the base bitmap
   
-  // White background - use BLACK text (0 = clear pixels)
-  disp.setTextSize(2);
-  disp.setCursor(8, 8);
+  // White background - use BLACK text (0 = clear pixels) with custom fonts
+  disp.setFont(&Open_Sans_ExtraBold_8);
   disp.setTextColor(0);
+  disp.setCursor(8, 16);
   disp.print(time.c_str());
+  disp.setFont(); // Reset to default
   
-  disp.setTextSize(1);
-  disp.setCursor(8, 32);
+  disp.setFont(&Roboto_Mono_Medium_6);
   disp.setTextColor(0);
+  disp.setCursor(8, 35);
   disp.print(day.c_str());
   
-  disp.setCursor(8, 44);
+  disp.setCursor(8, 46);
   disp.print(date.c_str());
+  disp.setFont(); // Reset to default
 }
 
 void MinimalTheme::renderWeather(Adafruit_SSD1306& disp, const WeatherData& data) {
   if (data.success) {
-    disp.setTextSize(1);
+    disp.setFont(&Roboto_Mono_Medium_6);
     disp.setTextColor(0); // Black text on white background (0 = clear pixels)
     String temp_c = String(data.temperature_c, 0) + "C";
-    disp.setCursor(96, 32);
+    disp.setCursor(96, 35);
     disp.print(temp_c.c_str());
-    disp.setCursor(96, 44);
+    disp.setCursor(96, 46);
     disp.print(data.condition.c_str());
+    disp.setFont(); // Reset to default
   }
 }
 

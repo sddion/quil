@@ -7,6 +7,7 @@
 
 void ntp_init();
 void ntp_update();
+void ntp_set_timezone(int offset_sec);
 String ntp_get_time();
 String ntp_get_date();
 String ntp_get_day();

@@ -10,4 +10,8 @@ bool config_save_theme(uint8_t theme);
 bool config_load_theme(uint8_t* theme);
 bool config_save_weather(const char* api_key, const char* location);
 bool config_load_weather(char* api_key, char* location);
+bool config_save_timezone(int offset_sec);
+bool config_load_timezone(int* offset_sec);
+bool config_save_contrast(uint8_t level);
+bool config_load_contrast(uint8_t* level);
 void config_clear();
