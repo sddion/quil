@@ -24,3 +24,20 @@
 #define CONFIG_KEY_PASS "pass"
 #define CONFIG_KEY_TZ "tz"
 #define CONFIG_KEY_LANG "lang"
+
+// Default credentials from secrets.env (injected at build time)
+#ifndef DEFAULT_WIFI_SSID
+#define DEFAULT_WIFI_SSID ""
+#endif
+
+#ifndef DEFAULT_WIFI_PASSWORD
+#define DEFAULT_WIFI_PASSWORD ""
+#endif
+
+#ifndef DEFAULT_WEATHER_API_KEY
+#define DEFAULT_WEATHER_API_KEY ""
+#endif
+
+#ifndef DEFAULT_WEATHER_LOCATION
+#define DEFAULT_WEATHER_LOCATION "Delhi"
+#endif

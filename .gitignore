@@ -8,6 +8,7 @@
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+firmware/secrets.env
 
 # Arduino / ESP-IDF
 .pio/

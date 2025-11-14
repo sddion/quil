@@ -33,8 +33,9 @@ void mode_time_init() {
     mode_time_set_theme((DisplayTheme_t)theme_val);
   }
   if (!config_load_weather(weatherApiKey, weatherLocation)) {
-    strcpy(weatherApiKey, "");
-    strcpy(weatherLocation, "Delhi");
+    // Use defaults from secrets.env
+    strcpy(weatherApiKey, DEFAULT_WEATHER_API_KEY);
+    strcpy(weatherLocation, DEFAULT_WEATHER_LOCATION);
   }
 }
 
