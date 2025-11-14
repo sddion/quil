@@ -25,3 +25,10 @@ typedef enum {
   EXPR_THINKING,
   EXPR_LOGO
 } Expression_t;
+
+typedef enum {
+  THEME_MINIMAL,
+  THEME_BOLD,
+  THEME_RETRO,
+  THEME_PLAYBACK
+} DisplayTheme_t;

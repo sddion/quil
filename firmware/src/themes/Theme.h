@@ -1,42 +1,14 @@
-#ifndef THEMES_H
-#define THEMES_H
+#pragma once
 
-#include <Adafruit_GFX.h>
+#include <Arduino.h>
 #include <Adafruit_SSD1306.h>
-#include "fonts/FreeSansBold12pt7b.h"
-#include "fonts/FreeSans9pt7b.h"
-#include "fonts/FreeSans7pt7b.h"
+#include "modules/weather_manager.h"
 
-struct Theme {
-    const GFXfont* fontTime;
-    const GFXfont* fontDay;
-    const GFXfont* fontDate;
-
-    int timeX, timeY;
-    int weatherX, weatherY;
-    int dayX, dayY;
-    int dateX, dateY;
-    int cornerX, cornerY;
-
-    void (*render)(Adafruit_SSD1306&, const tm&, const Theme&, const char*);
+class Theme {
+public:
+  virtual void renderTime(Adafruit_SSD1306& disp, String time, String date, String day) = 0;
+  virtual void renderWeather(Adafruit_SSD1306& disp, const WeatherData& data) = 0;
+  virtual void renderMusic(Adafruit_SSD1306& disp, String song, String artist, bool isPlaying) = 0;
+  virtual void renderBattery(Adafruit_SSD1306& disp, uint8_t percentage, bool isLow) = 0;
 };
 
-// Built-in themes
-extern Theme MinimalHeader;
-extern Theme BoldHeader;
-extern Theme RetroHeader;
-
-// Active theme
-extern Theme* currentTheme;
-
-// Set active theme
-void setTheme(Theme& t);
-
-// Main renderer (calls theme.render)
-void renderCurrentTheme(
-    Adafruit_SSD1306 &d,
-    const tm &t,
-    const char* dayStr
-);
-
-#endif

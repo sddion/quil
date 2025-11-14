@@ -46,4 +46,4 @@ extern const unsigned char _angry_039[] PROGMEM;
 extern const unsigned char _angry_040[] PROGMEM;
 extern const unsigned char _angry_041[] PROGMEM;
 
-extern const unsigned char* const angry_frames[] PROGMEM = {};
+extern const unsigned char* const angry_frames[] PROGMEM;

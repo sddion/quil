@@ -67,7 +67,14 @@ void anim_update() {
   
   current_frame++;
   if (current_frame >= total_frames) {
-    current_frame = 0;
+    // Stop boot animation after completion (don't loop)
+    if (current_anim == ANIM_BOOT) {
+      playing = false;
+      current_anim = ANIM_NONE;
+    } else {
+      // Other animations can loop
+      current_frame = 0;
+    }
   }
 }
 

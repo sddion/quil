@@ -25,6 +25,8 @@
 #define CONFIG_KEY_SSID "wifi_ssid"
 #define CONFIG_KEY_PASS "wifi_pass"
 #define CONFIG_KEY_THEME "theme"
+#define CONFIG_KEY_WEATHER_API_KEY "weather_api_key"
+#define CONFIG_KEY_WEATHER_LOCATION "weather_location"
 
 // NTP configuration
 #define NTP_SERVER "pool.ntp.org"

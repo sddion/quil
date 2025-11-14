@@ -42,3 +42,7 @@ void hal_display_bitmap(const uint8_t* bitmap) {
 void hal_display_update() {
   disp.display();
 }
+
+Adafruit_SSD1306& hal_display_get_display() {
+  return disp;
+}

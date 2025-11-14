@@ -4,6 +4,9 @@
 #ifdef ESP32
 #include <Preferences.h>
 static Preferences prefs;
+#define CONFIG_KEY_THEME "theme"
+#define CONFIG_KEY_WEATHER_API_KEY "weather_api_key"
+#define CONFIG_KEY_WEATHER_LOCATION "weather_location"
 #elif defined(ESP8266)
 #include <EEPROM.h>
 #define EEPROM_SIZE 512
@@ -77,6 +80,31 @@ bool config_load_theme(uint8_t* theme) {
 #elif defined(ESP8266)
   *theme = EEPROM.read(100);
   return true;
+#endif
+}
+
+bool config_save_weather(const char* api_key, const char* location) {
+#ifdef ESP32
+  prefs.putString(CONFIG_KEY_WEATHER_API_KEY, api_key);
+  prefs.putString(CONFIG_KEY_WEATHER_LOCATION, location);
+  return true;
+#elif defined(ESP8266)
+  // Stub for ESP8266
+  return false;
+#endif
+}
+
+bool config_load_weather(char* api_key, char* location) {
+#ifdef ESP32
+  String k = prefs.getString(CONFIG_KEY_WEATHER_API_KEY, "");
+  String l = prefs.getString(CONFIG_KEY_WEATHER_LOCATION, "");
+  if (k.length() == 0) return false;
+  strcpy(api_key, k.c_str());
+  strcpy(location, l.c_str());
+  return true;
+#elif defined(ESP8266)
+  // Stub for ESP8266
+  return false;
 #endif
 }
 

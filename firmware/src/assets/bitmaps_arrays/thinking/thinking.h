@@ -72,4 +72,4 @@ extern const unsigned char _thinking_065[] PROGMEM;
 extern const unsigned char _thinking_066[] PROGMEM;
 extern const unsigned char _thinking_067[] PROGMEM;
 
-extern const unsigned char* const  thinking_frames[] PROGMEM = {};
+extern const unsigned char* const  thinking_frames[] PROGMEM;

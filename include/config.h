@@ -12,7 +12,8 @@
 #define PORTAL_PORT 80
 
 #define NTP_SERVER "pool.ntp.org"
-#define NTP_OFFSET_SEC 0
+#define NTP_OFFSET_SEC 19800  // IST (India Standard Time) UTC+5:30 = 5*3600 + 30*60 = 19800 seconds
+#define NTP_DAYLIGHT_OFFSET_SEC 0  // No daylight saving in India
 #define NTP_UPDATE_MS 3600000
 
 #define HEAP_CHECK_MS 30000

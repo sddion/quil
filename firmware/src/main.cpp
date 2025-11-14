@@ -17,6 +17,7 @@
 #include "modules/wake_manager.h"
 #include "modules/llm_bridge.h"
 #include "modules/animation_manager.h"
+#include "modules/battery_manager.h"
 #include "hal/hal_mpr121.h"
 #include "modes/mode_time.h"
 #include "modes/mode_music.h"
@@ -37,17 +38,26 @@ void setup() {
   config_init();
   diag_init();
   state_init();
-  wifi_init();
   gesture_init();
   actions_init();
   
-  char ssid[33], pass[65];
-  if (config_load_wifi(ssid, pass)) {
+  // Initialize WiFi and load saved credentials
+  wifi_init();
+  
+  // Check if we have saved WiFi credentials
+  if (wifi_has_saved_credentials()) {
+    Serial.println("[Setup] Found saved WiFi credentials");
+    char ssid[33], pass[65];
+    config_load_wifi(ssid, pass);
+    
+    // Attempt connection - even if it fails, stay in STA mode and keep retrying
     if (!wifi_connect(ssid, pass)) {
-      wifi_start_ap();
-      http_init();
+      Serial.println("[Setup] Initial connection failed, will retry in background");
+      // Don't start AP mode - just keep trying to connect in background
     }
   } else {
+    // No saved credentials - start AP mode for initial setup
+    Serial.println("[Setup] No saved credentials - starting AP mode");
     wifi_start_ap();
     http_init();
   }
@@ -62,16 +72,27 @@ void setup() {
     anim_update();
     delay(10);
   }
+  
+  // Clear display after boot animation
+  hal_display_clear();
+  hal_display_update();
+  
   mode_time_init();
   mode_music_init();
   mode_chat_init();
   mode_theme_init();
   mode_wifi_init();
   
+  // Force initial render to prevent black screen
+  mode_time_force_render();
+  
   Serial.println("Quil ready");
 }
 
 void loop() {
+  // WiFi reconnection task - handles automatic reconnection and internet checks
+  wifi_reconnect_task();
+  
   state_update();
   diag_update();
   ota_handle();

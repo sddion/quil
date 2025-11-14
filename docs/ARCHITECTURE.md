@@ -52,7 +52,8 @@ firmware/
 ├── src/
 │   ├── hal/             # Hardware Abstraction Layer
 │   ├── core/            # Core system logic
-│   ├── modules/         # High-level application modules
+│   ├── modules/         # High-level application 
+│   ├── themes/          # Themes for the device
 │   ├── modes/           # Different display modes for the device
 │   └── main.cpp         # Main application entry point
 └── lib/                 # Third-party libraries (managed by PlatformIO)
@@ -108,7 +109,7 @@ Modes define what is shown on the display at any given time. Each mode is respon
 
 To maintain code quality and consistency, please adhere to the following rules:
 
--   **Function Size**: Keep functions concise and focused, ideally under 20 lines of code.
+-   **Function Size**: Keep functions concise and focused.
 -   **File Size**: Limit file length to under 200 lines to improve readability and maintainability.
 -   **Pin Definitions**: Do not hardcode pin numbers directly in the code. Use the definitions provided in `firmware/include/pins.h`.
 -   **Non-Blocking Code**: Avoid using `delay()` or other blocking functions. Use `millis()` for timing and non-blocking alternatives whenever possible.
