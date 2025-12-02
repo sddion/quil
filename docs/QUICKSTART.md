@@ -10,7 +10,7 @@ Before you begin, make sure you have the following hardware and software:
 
 *   **ESP32 Development Board**: A compatible ESP32 board.
 *   **OLED Display**: An SSD1306-based I2C OLED display.
-*   **Touch Sensor**: An MPR121 touch sensor.
+*   **Touch Sensor**: Two TTP223 touch sensors.
 *   **Microphone**: An INMP441 I2S microphone.
 *   **Speaker**: A MAX98357A I2S speaker.
 -   **USB Cable**: For connecting your ESP32 to your computer.
@@ -72,7 +72,7 @@ If you need to change the WiFi configuration, you can either re-flash the firmwa
 
 ### Mode Switching
 
-You can cycle through the different display modes by **double-tapping** the MPR121 touch sensor. The available modes are:
+You can cycle through the different display modes by **double-tapping** the TTP223 touch sensor. The available modes are:
 
 1.  **TIME_DATE**: Shows the current time and date, synchronized via NTP.
 2.  **MUSIC**: Provides controls for music playback.
@@ -134,8 +134,8 @@ firmware/
 *   **2.4GHz Only**: The ESP32 does not support 5GHz networks. Make sure you are connecting to a 2.4GHz band.
 
 **Touch not responding?**
-*   **Check I2C Address**: The default address for the MPR121 is `0x5A`.
-*   **Verify Connections**: Make sure the I2C lines are properly connected.
+*   **Check Connections**: Ensure the TTP223 sensors are connected to the correct GPIO pins (34 and 35 on ESP32).
+*   **Verify Power**: Make sure the sensors are receiving 3.3V.
 
 **OTA not appearing?**
 *   **Same Network**: Ensure your computer and the device are on the same local network.

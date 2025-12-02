@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Quil firmware uses two TTP223 capacitive touch sensors for user interaction. This system replaces the previous MPR121-based touch system with a simpler, more reliable dual-sensor approach that supports comprehensive gesture detection.
+The Quil firmware uses two TTP223 capacitive touch sensors for user interaction. This system provides a reliable dual-sensor approach that supports comprehensive gesture detection.
 
 ## Hardware Configuration
 
@@ -301,24 +301,7 @@ When events occur, automatic debug output is generated:
 - **Solution**: Touch second sensor while first is still pressed
 - **Adjust**: Increase `SWIPE_MAX_TIME` if needed
 
-## Migration from MPR121
 
-The TTP223 system provides equivalent functionality to the previous MPR121 system:
-
-| MPR121 Feature | TTP223 Equivalent |
-|----------------|-------------------|
-| 12 electrodes | 2 dedicated sensors |
-| Electrode swipe | A→B / B→A swipe |
-| Single/double tap | Single/double tap |
-| I2C communication | Direct GPIO read |
-| Touch threshold | Hardware-defined |
-
-**Benefits of TTP223:**
-- Simpler wiring (no I2C)
-- Lower cost
-- More reliable detection
-- No I2C bus conflicts
-- Built-in noise filtering
 
 ## Future Enhancements
 

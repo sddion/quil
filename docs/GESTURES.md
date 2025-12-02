@@ -6,7 +6,7 @@ This document provides a comprehensive overview of the gesture detection system 
 
 The gesture detection system is composed of two main modules: `gesture_manager` and `touch_actions`.
 
-*   **`gesture_manager`**: This module is responsible for decoding raw touch input from the MPR121 sensor into high-level gestures such as taps and swipes.
+*   **`gesture_manager`**: This module is responsible for decoding raw touch input from the TTP223 sensors into high-level gestures such as taps and swipes.
 *   **`touch_actions`**: This module maps the detected gestures to specific actions based on the current display mode.
 
 ### Data Flow
@@ -15,7 +15,7 @@ The following diagram illustrates the data flow from raw touch input to action e
 
 ```mermaid
 graph TD
-    A[MPR121 Touch Sensor] -->|Raw Touch Data| B(hal_mpr121_read_touched);
+    A[TTP223 Touch Sensors] -->|Raw Touch Data| B(hal_ttp223_update);
     B -->|Touch Bitmask| C{Gesture Manager};
     C -->|GestureType| D{Touch Actions};
     D -->|Action| E[Display Mode Functions];
@@ -56,8 +56,8 @@ The gesture system is integrated into the main application loop in `main.cpp`.
 
 ```cpp
 // In the main loop:
-uint16_t touch = hal_mpr121_read_touched();
-GestureType gest = gesture_detect(touch, millis());
+hal_ttp223_update();
+GestureType gest = gesture_detect(0, millis());
 
 if (gest != GESTURE_NONE) {
   actions_handle(gest, state_get_mode());

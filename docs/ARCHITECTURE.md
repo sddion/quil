@@ -67,7 +67,7 @@ The HAL provides a consistent interface to the underlying hardware, regardless o
 
 -   `hal_i2c.*`: Wrapper for the I2C communication protocol.
 -   `hal_display.*`: Driver for the SSD1306 OLED display.
--   `hal_mpr121.*`: Driver for the MPR121 touch sensor.
+-   `hal_ttp223.*`: Driver for the TTP223 touch sensors.
 -   `hal_i2s.*`: Driver for the I2S audio interface (used for the microphone and speaker on ESP32).
 
 ### Core Layer
@@ -84,7 +84,7 @@ Modules are self-contained components that provide specific features and functio
 -   `config_store.*`: Manages persistent storage of configuration settings, such as WiFi credentials, using the Non-Volatile Storage (NVS) library.
 -   `wifi_manager.*`: Handles WiFi connectivity, including connecting to an existing network (STA mode) or creating an access point (AP mode) for initial setup.
 -   `ntp_client.*`: Synchronizes the device's internal clock with a Network Time Protocol (NTP) server.
--   `gesture_manager.*`: Decodes touch inputs from the MPR121 sensor into gestures (e.g., tap, swipe).
+-   `gesture_manager.*`: Decodes touch inputs from the TTP223 sensors into gestures (e.g., tap, swipe).
 -   `voice_manager.*`: Manages audio input and output, including wake word detection and voice streaming.
 -   `llm_bridge.*`: Facilitates communication with a backend service for Large Language Model (LLM) processing.
 
