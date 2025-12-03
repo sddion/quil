@@ -43,6 +43,7 @@ tests/
 .pio/
 
 # KiCad
+kicad/
 *.bck
 *.dcm
 *.net
