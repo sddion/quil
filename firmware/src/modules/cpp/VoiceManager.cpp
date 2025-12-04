@@ -1,5 +1,4 @@
 #include "../h/VoiceManager.h"
-#ifdef ESP32
 #include "hal/h/I2S.h"
 
 static bool listening = false;
@@ -43,12 +42,3 @@ float voice_get_rms() {
   }
   return sqrt(sum / (buffer_pos / 2));
 }
-#else
-void voice_init() {}
-void voice_start_listening() {}
-void voice_stop_listening() {}
-bool voice_is_listening() { return false; }
-size_t voice_read_buffer(uint8_t* buf, size_t len) { return 0; }
-void voice_play_response(const uint8_t* data, size_t len) {}
-float voice_get_rms() { return 0.0f; }
-#endif

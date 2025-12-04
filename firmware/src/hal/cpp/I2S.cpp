@@ -1,6 +1,5 @@
 #include "../h/I2S.h"
 
-#ifdef ESP32
 #include <driver/i2s.h>
 #include "pins.h"
 
@@ -57,4 +56,3 @@ size_t hal_i2s_write_speaker(const uint8_t* data, size_t len) {
   i2s_write(I2S_NUM_1, data, len, &written, portMAX_DELAY);
   return written;
 }
-#endif

@@ -1,4 +1,4 @@
-#pragma once
+ #pragma once
 
 typedef enum {
   MODE_TIME_DATE,

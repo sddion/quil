@@ -6,13 +6,9 @@
 #define DISPLAY_ADDR 0x3C
 
 // I2C pins (ESP32 default)
-#ifdef ESP32
+// I2C pins (ESP32 default)
 #define I2C_SDA 21
 #define I2C_SCL 22
-#elif defined(ESP8266)
-#define I2C_SDA 4  // D2
-#define I2C_SCL 5  // D1
-#endif
 
 
 
@@ -33,7 +29,7 @@
 #define NTP_UPDATE_MS 3600000  // Update every hour
 
 // Audio I2S pins (ESP32 only)
-#ifdef ESP32
+// Audio I2S pins
 #define I2S_MIC_BCK 26
 #define I2S_MIC_WS 25
 #define I2S_MIC_DIN 33
@@ -41,4 +37,3 @@
 #define I2S_SPK_BCK 14
 #define I2S_SPK_WS 15
 #define I2S_SPK_DOUT 32
-#endif
