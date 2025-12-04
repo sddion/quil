@@ -24,9 +24,9 @@ void mode_time_init() {
   battery_init();
   
   if (!config_load_weather(weatherApiKey, weatherLocation)) {
-    // Use defaults from secrets.env
-    strcpy(weatherApiKey, DEFAULT_WEATHER_API_KEY);
-    strcpy(weatherLocation, DEFAULT_WEATHER_LOCATION);
+    // No saved weather config - initialize to empty
+    weatherApiKey[0] = '\0';
+    weatherLocation[0] = '\0';
   }
 }
 

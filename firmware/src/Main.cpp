@@ -61,18 +61,8 @@ void setup() {
       Serial.println("[Setup] Initial connection failed, will retry in background");
       // Don't start AP mode - just keep trying to connect in background
     }
-  } else if (strlen(DEFAULT_WIFI_SSID) > 0) {
-    // No saved credentials but we have defaults from secrets.env
-    Serial.println("[Setup] Using default WiFi credentials from secrets.env");
-    Serial.print("[Setup] SSID: ");
-    Serial.println(DEFAULT_WIFI_SSID);
-    
-    // Attempt connection with defaults
-    if (!wifi_connect(DEFAULT_WIFI_SSID, DEFAULT_WIFI_PASSWORD)) {
-      Serial.println("[Setup] Initial connection failed, will retry in background");
-    }
   } else {
-    // No saved credentials and no defaults - start AP mode for initial setup
+    // No saved credentials - start AP mode for initial setup
     Serial.println("[Setup] No saved credentials - starting AP mode");
     wifi_start_ap();
   }
