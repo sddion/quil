@@ -95,7 +95,6 @@ Modes define what is shown on the display at any given time. Each mode is respon
 -   `mode_time.*`: Displays the current time and date.
 -   `mode_wifi_info.*`: Shows WiFi connection status, IP address, and signal strength (RSSI).
 -   `mode_chat.*`: Provides a user interface for interacting with the LLM.
--   `mode_music.*`: Controls music playback.
 -   `mode_theme_preview.*`: Allows the user to preview and select different UI themes.
 
 ## Data Flow

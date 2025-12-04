@@ -1,5 +1,5 @@
-#include "mode_theme_preview.h"
-#include "hal/hal_display.h"
+#include "../h/ThemePreview.h"
+#include "hal/h/Display.h"
 
 static const char* themes[] = {"Aurora", "NeonPulse", "MonoMist"};
 static uint8_t current_theme = 0;

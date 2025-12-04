@@ -1,5 +1,5 @@
-#include "wifi_manager.h"
-#include "config_store.h"
+#include "../h/WifiManager.h"
+#include "../h/ConfigStore.h"
 #include "config.h"
 #ifdef ESP32
 #include <WiFi.h>

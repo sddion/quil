@@ -1,4 +1,4 @@
-#include "hal_i2c.h"
+#include "../h/I2C.h"
 #include <Wire.h>
 #include "pins.h"
 #include "config.h"

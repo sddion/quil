@@ -1,6 +1,6 @@
-#include "mode_chat.h"
-#include "hal/hal_display.h"
-#include "../modules/voice_manager.h"
+#include "../h/Chat.h"
+#include "hal/h/Display.h"
+#include "../../modules/h/VoiceManager.h"
 
 void mode_chat_init() {
   voice_init();

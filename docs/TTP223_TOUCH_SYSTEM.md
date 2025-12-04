@@ -1,8 +1,8 @@
-# TTP223 Dual Touch Sensor System
+# TTP223 Single Touch Sensor System
 
 ## Overview
 
-The Quil firmware uses two TTP223 capacitive touch sensors for user interaction. This system provides a reliable dual-sensor approach that supports comprehensive gesture detection.
+The Quil firmware uses one TTP223 capacitive touch sensor for user interaction. This system provides a reliable single-sensor approach that supports tap-based gesture detection.
 
 ## Hardware Configuration
 
@@ -10,11 +10,9 @@ The Quil firmware uses two TTP223 capacitive touch sensors for user interaction.
 
 #### ESP32
 - **Sensor A**: GPIO34 (ADC1_CH6) - Input only pin
-- **Sensor B**: GPIO35 (ADC1_CH7) - Input only pin
 
 #### ESP8266
 - **Sensor A**: D5 (GPIO14)
-- **Sensor B**: D6 (GPIO12)
 
 ### Sensor Characteristics
 - **Type**: TTP223 Capacitive Touch Sensor
@@ -27,7 +25,7 @@ The Quil firmware uses two TTP223 capacitive touch sensors for user interaction.
 
 ### Individual Sensor Events
 
-Each sensor (A and B) can independently detect:
+The sensor can detect:
 
 1. **Single Tap**
    - Quick touch and release
@@ -54,30 +52,6 @@ Each sensor (A and B) can independently detect:
    - Includes total hold duration
    - Use case: End continuous action
 
-### Combined Gestures
-
-When both sensors are used together:
-
-1. **Swipe A→B (Swipe Right)**
-   - Touch A, then touch B within 500ms
-   - A must still be pressed when B is touched
-   - Use case: Navigate forward, next item, increase value
-
-2. **Swipe B→A (Swipe Left)**
-   - Touch B, then touch A within 500ms
-   - B must still be pressed when A is touched
-   - Use case: Navigate backward, previous item, decrease value
-
-3. **Simultaneous Press**
-   - Both sensors pressed within 100ms of each other
-   - Triggered on second press
-   - Use case: Special actions, screenshots, emergency functions
-
-4. **Simultaneous Release**
-   - Both sensors released at the same time
-   - Triggered when both are released together
-   - Use case: Reset, cancel, return to home
-
 ## Timing Configuration
 
 All timing values are in milliseconds and defined in `hal_ttp223.h`:
@@ -87,7 +61,6 @@ All timing values are in milliseconds and defined in `hal_ttp223.h`:
 #define TAP_TIMEOUT 300               // Max duration for tap
 #define DOUBLE_TAP_WINDOW 400         // Max time between taps
 #define LONG_PRESS_TIME 800           // Long press threshold
-#define SWIPE_MAX_TIME 500            // Max time for swipe gesture
 ```
 
 ## Software Architecture
@@ -109,13 +82,13 @@ modules/
 ### Data Flow
 
 ```
-TTP223 Sensors (Hardware)
+TTP223 Sensor (Hardware)
          ↓
-hal_ttp223_update() - Read & debounce pins
+hal_ttp223_update() - Read & debounce pin
          ↓
-State Machines - Process timing & patterns
+State Machine - Process timing & patterns
          ↓
-Event/Gesture Detection
+Event Detection
          ↓
 gesture_detect() - Convert to GestureType
          ↓
@@ -124,7 +97,7 @@ actions_handle() - Execute mode-specific action
 
 ### State Machine
 
-Each sensor runs an independent state machine:
+The sensor runs a state machine:
 
 - **IDLE**: No touch detected
 - **PRESSED**: Touch detected, timing started
@@ -140,14 +113,14 @@ Each sensor runs an independent state machine:
 ```cpp
 void hal_ttp223_init();
 ```
-Initializes both touch sensors and configures GPIO pins. Call once in `setup()`.
+Initializes the touch sensor and configures GPIO pin. Call once in `setup()`.
 
 ### Update Loop
 
 ```cpp
 void hal_ttp223_update();
 ```
-**MUST** be called every loop iteration. Updates sensor state machines and detects gestures.
+**MUST** be called every loop iteration. Updates sensor state machine and detects gestures.
 
 ### Event Queries
 
@@ -155,20 +128,10 @@ void hal_ttp223_update();
 bool hal_ttp223_has_event(TouchSensor_t sensor);
 TouchEventData hal_ttp223_get_event(TouchSensor_t sensor);
 ```
-Check for and retrieve individual sensor events. Events are consumed when retrieved.
+Check for and retrieve sensor events. Events are consumed when retrieved.
 
 **TouchSensor_t values:**
 - `TOUCH_SENSOR_A`
-- `TOUCH_SENSOR_B`
-- `TOUCH_SENSOR_BOTH` (for state queries only)
-
-### Gesture Queries
-
-```cpp
-bool hal_ttp223_has_gesture();
-CombinedGestureData hal_ttp223_get_gesture();
-```
-Check for and retrieve combined gestures (swipes, simultaneous press/release).
 
 ### State Queries
 
@@ -182,9 +145,8 @@ Query current sensor state and press duration in real-time.
 
 ```cpp
 void hal_ttp223_print_event(const TouchEventData& event);
-void hal_ttp223_print_gesture(const CombinedGestureData& gesture);
 ```
-Print human-readable event/gesture information to Serial. Automatically called when events are triggered.
+Print human-readable event information to Serial. Automatically called when events are triggered.
 
 ## Data Structures
 
@@ -199,16 +161,6 @@ struct TouchEventData {
 };
 ```
 
-### CombinedGestureData
-
-```cpp
-struct CombinedGestureData {
-  CombinedGesture_t gesture; // Gesture type
-  unsigned long timestamp;   // When gesture occurred
-  unsigned long duration;    // Time between touches (for swipes)
-};
-```
-
 ## Integration Example
 
 ### Basic Usage
@@ -216,7 +168,7 @@ struct CombinedGestureData {
 ```cpp
 void setup() {
   Serial.begin(115200);
-  hal_ttp223_init();  // Initialize touch sensors
+  hal_ttp223_init();  // Initialize touch sensor
 }
 
 void loop() {
@@ -230,15 +182,6 @@ void loop() {
       Serial.println("A tapped - cycle mode");
     }
   }
-  
-  // Check combined gestures
-  if (hal_ttp223_has_gesture()) {
-    CombinedGestureData gesture = hal_ttp223_get_gesture();
-    
-    if (gesture.gesture == COMBINED_GESTURE_SWIPE_A_TO_B) {
-      Serial.println("Swiped right - next item");
-    }
-  }
 }
 ```
 
@@ -246,39 +189,33 @@ void loop() {
 
 The firmware uses `touch_actions.cpp` to map gestures to mode-specific actions:
 
-| Gesture | TIME_DATE | MUSIC | CHAT | THEME_PREVIEW | WIFI_INFO |
-|---------|-----------|-------|------|---------------|-----------|
-| Single Tap | - | Play/Pause | Mute/Unmute | Apply Theme | - |
-| Double Tap | Cycle Mode | Cycle Mode | Cycle Mode | Cycle Mode | Cycle Mode |
-| Swipe Right | - | Next Track | - | Next Theme | - |
-| Swipe Left | - | Previous Track | - | Previous Theme | - |
+| Gesture | TIME_DATE | CHAT | THEME_PREVIEW | WIFI_INFO |
+|---------|-----------|------|---------------|-----------|
+| Single Tap | - | Mute/Unmute | Apply Theme | - |
+| Double Tap | Cycle Mode | Cycle Mode | Cycle Mode | Cycle Mode |
 
 ## Serial Debug Output
 
 When events occur, automatic debug output is generated:
 
 ```
-[TTP223] Touch sensors initialized
+[TTP223] Touch sensor initialized
 [TTP223] Sensor A pin: 34
-[TTP223] Sensor B pin: 35
 
 [TTP223] Event: Sensor A - SINGLE_TAP
-[TTP223] Event: Sensor B - DOUBLE_TAP
+[TTP223] Event: Sensor A - DOUBLE_TAP
 [TTP223] Event: Sensor A - LONG_PRESS (850ms)
 [TTP223] Event: Sensor A - HOLD_START
 [TTP223] Event: Sensor A - HOLD_RELEASE (2340ms)
-[TTP223] Gesture: SWIPE_A_TO_B (245ms)
-[TTP223] Gesture: SIMULTANEOUS_PRESS
 ```
 
 ## Performance Characteristics
 
 - **Non-blocking**: All operations use `millis()` for timing
-- **Memory**: ~200 bytes static allocation (no heap usage)
+- **Memory**: ~100 bytes static allocation (no heap usage)
 - **CPU**: Minimal overhead, suitable for 80MHz ESP8266
 - **Latency**: 
   - Tap detection: 50-350ms
-  - Swipe detection: 50-550ms
   - Long press: 850ms
 
 ## Troubleshooting
@@ -292,16 +229,9 @@ When events occur, automatic debug output is generated:
 - **Solution**: Reduce `DEBOUNCE_TIME` to 30ms (minimum recommended: 20ms)
 
 ### No Response
-- **Verify**: Sensor power (3.3V), correct pin assignments
+- **Verify**: Sensor power (3.3V), correct pin assignment
 - **Check**: Serial output for initialization messages
 - **Test**: Use `hal_ttp223_is_pressed()` to verify raw sensor readings
-
-### Swipes Not Detected
-- **Issue**: Touching sensors too slowly
-- **Solution**: Touch second sensor while first is still pressed
-- **Adjust**: Increase `SWIPE_MAX_TIME` if needed
-
-
 
 ## Future Enhancements
 
@@ -310,8 +240,7 @@ Potential additions to the system:
 1. **Triple Tap**: Detect three quick taps
 2. **Adjustable Timing**: Runtime configuration of timing thresholds
 3. **Touch Sensitivity**: GPIO analog read for pressure detection
-4. **Multi-Pattern**: Recognize tap patterns (e.g., A-B-A sequence)
-5. **Haptic Feedback**: Vibration motor response to touch
+4. **Haptic Feedback**: Vibration motor response to touch
 
 ## References
 

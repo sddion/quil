@@ -1,4 +1,4 @@
-#include "hal_i2s.h"
+#include "../h/I2S.h"
 
 #ifdef ESP32
 #include <driver/i2s.h>

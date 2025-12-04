@@ -1,4 +1,4 @@
-#include "cloud_sync.h"
+#include "../h/CloudSync.h"
 
 static bool connected = false;
 

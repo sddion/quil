@@ -1,4 +1,4 @@
-#include "ntp_client.h"
+#include "../h/NtpClient.h"
 #include "config.h"
 #include <WiFiUdp.h>
 #include <NTPClient.h>

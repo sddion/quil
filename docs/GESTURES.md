@@ -6,7 +6,7 @@ This document provides a comprehensive overview of the gesture detection system 
 
 The gesture detection system is composed of two main modules: `gesture_manager` and `touch_actions`.
 
-*   **`gesture_manager`**: This module is responsible for decoding raw touch input from the TTP223 sensors into high-level gestures such as taps and swipes.
+*   **`gesture_manager`**: This module is responsible for decoding raw touch input from the TTP223 sensor into high-level gestures such as taps.
 *   **`touch_actions`**: This module maps the detected gestures to specific actions based on the current display mode.
 
 ### Data Flow
@@ -15,8 +15,8 @@ The following diagram illustrates the data flow from raw touch input to action e
 
 ```mermaid
 graph TD
-    A[TTP223 Touch Sensors] -->|Raw Touch Data| B(hal_ttp223_update);
-    B -->|Touch Bitmask| C{Gesture Manager};
+    A[TTP223 Touch Sensor] -->|Raw Touch Data| B(hal_ttp223_update);
+    B -->|Touch Event| C{Gesture Manager};
     C -->|GestureType| D{Touch Actions};
     D -->|Action| E[Display Mode Functions];
 ```
@@ -27,28 +27,23 @@ The `gesture_manager` uses a state machine and timing thresholds to detect gestu
 
 ### Supported Gestures
 
-*   **Single Tap**: A touch and release on a single electrode within 300ms.
-*   **Double Tap**: Two single taps within a 600ms window.
-*   **Swipe Left**: A touch moving from a higher-numbered electrode to a lower-numbered one (e.g., 11 to 8) within 400ms.
-*   **Swipe Right**: A touch moving from a lower-numbered electrode to a higher-numbered one (e.g., 0 to 3) within 400ms.
+*   **Single Tap**: A touch and release within 300ms.
+*   **Double Tap**: Two single taps within a 400ms window.
 
 ### Timing Thresholds
 
 -   **Single Tap**: < 300ms
--   **Double Tap**: < 600ms between taps
--   **Swipe**: < 400ms for the complete sequence
--   **Tap Timeout**: 600ms (resets the tap counter)
+-   **Double Tap**: < 400ms between taps
+-   **Tap Timeout**: 400ms (resets the tap counter)
 
 ## Action Mapping
 
 The `touch_actions` module maps gestures to actions based on the current display mode.
 
-| Gesture | TIME_DATE | MUSIC | CHAT | THEME_PREVIEW | WIFI_INFO |
-|---|---|---|---|---|---|
-| **Single Tap** | - | Play/Pause | Mute/Unmute | Apply Theme | - |
-| **Double Tap** | Cycle Mode | Cycle Mode | Cycle Mode | Cycle Mode | Cycle Mode |
-| **Swipe Left** | - | Previous Track | - | Previous Theme | - |
-| **Swipe Right**| - | Next Track | - | Next Theme | - |
+| Gesture | TIME_DATE | CHAT | THEME_PREVIEW | WIFI_INFO |
+|---|---|---|---|---|
+| **Single Tap** | - | Mute/Unmute | Apply Theme | - |
+| **Double Tap** | Cycle Mode | Cycle Mode | Cycle Mode | Cycle Mode |
 
 ## Integration
 

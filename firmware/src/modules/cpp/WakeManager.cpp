@@ -1,5 +1,5 @@
-#include "wake_manager.h"
-#include "voice_manager.h"
+#include "../h/WakeManager.h"
+#include "../h/VoiceManager.h"
 
 static float threshold = 500.0f;
 static float last_confidence = 0.0f;

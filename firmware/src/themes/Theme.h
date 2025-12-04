@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 #include <Adafruit_SSD1306.h>
-#include "modules/weather_manager.h"
+#include "modules/h/WeatherManager.h"
 
 class Theme {
 public:

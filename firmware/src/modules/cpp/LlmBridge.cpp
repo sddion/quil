@@ -1,5 +1,5 @@
-#include "llm_bridge.h"
-#include "voice_manager.h"
+#include "../h/LlmBridge.h"
+#include "../h/VoiceManager.h"
 
 static bool response_ready = false;
 

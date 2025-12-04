@@ -1,9 +1,9 @@
-#include "animation_manager.h"
-#include "hal/hal_display.h"
+#include "../h/AnimationManager.h"
+#include "hal/h/Display.h"
 
 #ifdef ESP32
 #include <pgmspace.h>
-#include "../animations/animation_frames.h"
+#include "../../animations/h/AnimationFrames.h"
 
 static AnimationType current_anim = ANIM_NONE;
 static uint16_t current_frame = 0;
@@ -81,7 +81,7 @@ bool anim_is_playing() {
 
 #elif defined(ESP8266)
 // ESP8266 limited animation support - boot animation only
-#include "../assets/bitmaps_arrays/bootanimation/bootanimation.h"
+#include "../../assets/bitmaps_arrays/bootanimation/bootanimation.h"
 
 static AnimationType current_anim = ANIM_NONE;
 static uint16_t current_frame = 0;

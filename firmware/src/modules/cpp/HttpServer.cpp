@@ -1,8 +1,8 @@
-#include "http_server.h"
+#include "../h/HttpServer.h"
 
 #ifdef ESP32
 #include <WebServer.h>
-#include "config_store.h"
+#include "../h/ConfigStore.h"
 
 static WebServer server(80);
 
@@ -126,7 +126,7 @@ bool http_is_running() {
 
 #elif defined(ESP8266)
 #include <ESP8266WebServer.h>
-#include "config_store.h"
+#include "../h/ConfigStore.h"
 
 static ESP8266WebServer server(80);
 

@@ -1,6 +1,6 @@
-#include "voice_manager.h"
+#include "../h/VoiceManager.h"
 #ifdef ESP32
-#include "hal/hal_i2s.h"
+#include "hal/h/I2S.h"
 
 static bool listening = false;
 static uint8_t audio_buffer[512];

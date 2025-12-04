@@ -1,4 +1,4 @@
-#include "hal_display.h"
+#include "../h/Display.h"
 #include "config.h"
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_GFX.h>

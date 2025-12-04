@@ -1,4 +1,4 @@
-#include "state_machine.h"
+#include "../h/StateMachine.h"
 #include <Arduino.h>
 #include "config.h"
 

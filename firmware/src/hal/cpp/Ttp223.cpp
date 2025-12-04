@@ -1,4 +1,4 @@
-#include "hal_ttp223.h"
+#include "../h/Ttp223.h"
 #include "pins.h"
 
 typedef enum {
@@ -31,93 +31,53 @@ struct SensorData {
   TouchEventData pending_event;
 };
 
-struct GestureTracker {
-  bool sensor_a_pressed;
-  bool sensor_b_pressed;
-  unsigned long sensor_a_press_time;
-  unsigned long sensor_b_press_time;
-  unsigned long sensor_a_release_time;
-  unsigned long sensor_b_release_time;
-  
-  bool has_pending_gesture;
-  CombinedGestureData pending_gesture;
-};
 
-static SensorData sensors[2];
-static GestureTracker gesture_tracker;
 
-static void update_sensor(SensorData* sensor, TouchSensor_t id);
-static void update_gestures();
-static bool read_pin_debounced(SensorData* sensor);
-static void trigger_event(SensorData* sensor, TouchSensor_t id, TouchEvent_t event, unsigned long duration = 0);
-static void trigger_gesture(CombinedGesture_t gesture, unsigned long duration = 0);
+static SensorData sensor;
+
+static void update_sensor(SensorData* s, TouchSensor_t id);
+static bool read_pin_debounced(SensorData* s);
+static void trigger_event(SensorData* s, TouchSensor_t id, TouchEvent_t event, unsigned long duration = 0);
 
 void hal_ttp223_init() {
-  sensors[TOUCH_SENSOR_A].pin = PIN_TOUCH_A;
-  sensors[TOUCH_SENSOR_A].state = STATE_IDLE;
-  sensors[TOUCH_SENSOR_A].current_reading = false;
-  sensors[TOUCH_SENSOR_A].last_reading = false;
-  sensors[TOUCH_SENSOR_A].debounced_state = false;
-  sensors[TOUCH_SENSOR_A].last_change_time = 0;
-  sensors[TOUCH_SENSOR_A].press_start_time = 0;
-  sensors[TOUCH_SENSOR_A].release_time = 0;
-  sensors[TOUCH_SENSOR_A].debounce_start = 0;
-  sensors[TOUCH_SENSOR_A].tap_count = 0;
-  sensors[TOUCH_SENSOR_A].long_press_triggered = false;
-  sensors[TOUCH_SENSOR_A].hold_start_triggered = false;
-  sensors[TOUCH_SENSOR_A].has_pending_event = false;
-  
-  sensors[TOUCH_SENSOR_B].pin = PIN_TOUCH_B;
-  sensors[TOUCH_SENSOR_B].state = STATE_IDLE;
-  sensors[TOUCH_SENSOR_B].current_reading = false;
-  sensors[TOUCH_SENSOR_B].last_reading = false;
-  sensors[TOUCH_SENSOR_B].debounced_state = false;
-  sensors[TOUCH_SENSOR_B].last_change_time = 0;
-  sensors[TOUCH_SENSOR_B].press_start_time = 0;
-  sensors[TOUCH_SENSOR_B].release_time = 0;
-  sensors[TOUCH_SENSOR_B].debounce_start = 0;
-  sensors[TOUCH_SENSOR_B].tap_count = 0;
-  sensors[TOUCH_SENSOR_B].long_press_triggered = false;
-  sensors[TOUCH_SENSOR_B].hold_start_triggered = false;
-  sensors[TOUCH_SENSOR_B].has_pending_event = false;
-  
-  gesture_tracker.sensor_a_pressed = false;
-  gesture_tracker.sensor_b_pressed = false;
-  gesture_tracker.sensor_a_press_time = 0;
-  gesture_tracker.sensor_b_press_time = 0;
-  gesture_tracker.sensor_a_release_time = 0;
-  gesture_tracker.sensor_b_release_time = 0;
-  gesture_tracker.has_pending_gesture = false;
+  sensor.pin = PIN_TOUCH_A;
+  sensor.state = STATE_IDLE;
+  sensor.current_reading = false;
+  sensor.last_reading = false;
+  sensor.debounced_state = false;
+  sensor.last_change_time = 0;
+  sensor.press_start_time = 0;
+  sensor.release_time = 0;
+  sensor.debounce_start = 0;
+  sensor.tap_count = 0;
+  sensor.long_press_triggered = false;
+  sensor.hold_start_triggered = false;
+  sensor.has_pending_event = false;
   
   pinMode(PIN_TOUCH_A, INPUT);
-  pinMode(PIN_TOUCH_B, INPUT);
   
-  Serial.println("[TTP223] Touch sensors initialized");
+  Serial.println("[TTP223] Touch sensor initialized");
   Serial.print("[TTP223] Sensor A pin: ");
   Serial.println(PIN_TOUCH_A);
-  Serial.print("[TTP223] Sensor B pin: ");
-  Serial.println(PIN_TOUCH_B);
 }
 
 void hal_ttp223_update() {
-  update_sensor(&sensors[TOUCH_SENSOR_A], TOUCH_SENSOR_A);
-  update_sensor(&sensors[TOUCH_SENSOR_B], TOUCH_SENSOR_B);
-  update_gestures();
+  update_sensor(&sensor, TOUCH_SENSOR_A);
 }
 
-static bool read_pin_debounced(SensorData* sensor) {
+static bool read_pin_debounced(SensorData* s) {
   unsigned long now = millis();
-  bool current = digitalRead(sensor->pin);
+  bool current = digitalRead(s->pin);
   
-  if (current != sensor->last_reading) {
-    sensor->debounce_start = now;
-    sensor->last_reading = current;
+  if (current != s->last_reading) {
+    s->debounce_start = now;
+    s->last_reading = current;
   }
   
-  if ((now - sensor->debounce_start) >= DEBOUNCE_TIME) {
-    if (current != sensor->debounced_state) {
-      sensor->debounced_state = current;
-      sensor->last_change_time = now;
+  if ((now - s->debounce_start) >= DEBOUNCE_TIME) {
+    if (current != s->debounced_state) {
+      s->debounced_state = current;
+      s->last_change_time = now;
       return true;
     }
   }
@@ -213,145 +173,66 @@ static void update_sensor(SensorData* sensor, TouchSensor_t id) {
   }
 }
 
-static void update_gestures() {
-  unsigned long now = millis();
-  bool a_pressed = sensors[TOUCH_SENSOR_A].debounced_state;
-  bool b_pressed = sensors[TOUCH_SENSOR_B].debounced_state;
-  
-  bool a_just_pressed = a_pressed && !gesture_tracker.sensor_a_pressed;
-  bool b_just_pressed = b_pressed && !gesture_tracker.sensor_b_pressed;
-  bool a_just_released = !a_pressed && gesture_tracker.sensor_a_pressed;
-  bool b_just_released = !b_pressed && gesture_tracker.sensor_b_pressed;
-  
-  if (a_just_pressed) {
-    gesture_tracker.sensor_a_press_time = now;
-  }
-  if (b_just_pressed) {
-    gesture_tracker.sensor_b_press_time = now;
-  }
-  if (a_just_released) {
-    gesture_tracker.sensor_a_release_time = now;
-  }
-  if (b_just_released) {
-    gesture_tracker.sensor_b_release_time = now;
-  }
-  
-  if (a_just_pressed && b_pressed) {
-    unsigned long time_diff = (now > gesture_tracker.sensor_b_press_time) ? 
-                              (now - gesture_tracker.sensor_b_press_time) : 0;
-    if (time_diff < 100) {
-      trigger_gesture(COMBINED_GESTURE_SIMULTANEOUS_PRESS);
-    }
-  } else if (b_just_pressed && a_pressed) {
-    unsigned long time_diff = (now > gesture_tracker.sensor_a_press_time) ? 
-                              (now - gesture_tracker.sensor_a_press_time) : 0;
-    if (time_diff < 100) {
-      trigger_gesture(COMBINED_GESTURE_SIMULTANEOUS_PRESS);
-    }
-  }
-  
-  if (a_just_released && b_just_released) {
-    trigger_gesture(COMBINED_GESTURE_SIMULTANEOUS_RELEASE);
-  }
-  
-  if (b_just_pressed && gesture_tracker.sensor_a_pressed) {
-    unsigned long time_diff = now - gesture_tracker.sensor_a_press_time;
-    if (time_diff > 0 && time_diff < SWIPE_MAX_TIME) {
-      trigger_gesture(COMBINED_GESTURE_SWIPE_A_TO_B, time_diff);
-    }
-  }
-  
-  if (a_just_pressed && gesture_tracker.sensor_b_pressed) {
-    unsigned long time_diff = now - gesture_tracker.sensor_b_press_time;
-    if (time_diff > 0 && time_diff < SWIPE_MAX_TIME) {
-      trigger_gesture(COMBINED_GESTURE_SWIPE_B_TO_A, time_diff);
-    }
-  }
-  
-  gesture_tracker.sensor_a_pressed = a_pressed;
-  gesture_tracker.sensor_b_pressed = b_pressed;
-}
 
-static void trigger_event(SensorData* sensor, TouchSensor_t id, TouchEvent_t event, unsigned long duration) {
-  if (!sensor->has_pending_event) {
-    sensor->pending_event.sensor = id;
-    sensor->pending_event.event = event;
-    sensor->pending_event.timestamp = millis();
-    sensor->pending_event.duration = duration;
-    sensor->has_pending_event = true;
+
+static void trigger_event(SensorData* s, TouchSensor_t id, TouchEvent_t event, unsigned long duration) {
+  if (!s->has_pending_event) {
+    s->pending_event.sensor = id;
+    s->pending_event.event = event;
+    s->pending_event.timestamp = millis();
+    s->pending_event.duration = duration;
+    s->has_pending_event = true;
     
-    hal_ttp223_print_event(sensor->pending_event);
+    hal_ttp223_print_event(s->pending_event);
   }
 }
 
-static void trigger_gesture(CombinedGesture_t gesture, unsigned long duration) {
-  if (!gesture_tracker.has_pending_gesture) {
-    gesture_tracker.pending_gesture.gesture = gesture;
-    gesture_tracker.pending_gesture.timestamp = millis();
-    gesture_tracker.pending_gesture.duration = duration;
-    gesture_tracker.has_pending_gesture = true;
-    
-    hal_ttp223_print_gesture(gesture_tracker.pending_gesture);
-  }
-}
 
-bool hal_ttp223_has_event(TouchSensor_t sensor) {
-  if (sensor == TOUCH_SENSOR_A || sensor == TOUCH_SENSOR_B) {
-    return sensors[sensor].has_pending_event;
+
+bool hal_ttp223_has_event(TouchSensor_t s) {
+  if (s == TOUCH_SENSOR_A) {
+    return sensor.has_pending_event;
   }
   return false;
 }
 
-TouchEventData hal_ttp223_get_event(TouchSensor_t sensor) {
+TouchEventData hal_ttp223_get_event(TouchSensor_t s) {
   TouchEventData event;
-  event.sensor = sensor;
+  event.sensor = s;
   event.event = TOUCH_EVENT_NONE;
   event.timestamp = 0;
   event.duration = 0;
   
-  if (sensor == TOUCH_SENSOR_A || sensor == TOUCH_SENSOR_B) {
-    if (sensors[sensor].has_pending_event) {
-      event = sensors[sensor].pending_event;
-      sensors[sensor].has_pending_event = false;
+  if (s == TOUCH_SENSOR_A) {
+    if (sensor.has_pending_event) {
+      event = sensor.pending_event;
+      sensor.has_pending_event = false;
     }
   }
   
   return event;
 }
 
-bool hal_ttp223_has_gesture() {
-  return gesture_tracker.has_pending_gesture;
-}
 
-CombinedGestureData hal_ttp223_get_gesture() {
-  CombinedGestureData gesture = gesture_tracker.pending_gesture;
-  gesture_tracker.has_pending_gesture = false;
-  return gesture;
-}
 
-bool hal_ttp223_is_pressed(TouchSensor_t sensor) {
-  if (sensor == TOUCH_SENSOR_A || sensor == TOUCH_SENSOR_B) {
-    return sensors[sensor].debounced_state;
-  } else if (sensor == TOUCH_SENSOR_BOTH) {
-    return sensors[TOUCH_SENSOR_A].debounced_state && 
-           sensors[TOUCH_SENSOR_B].debounced_state;
+bool hal_ttp223_is_pressed(TouchSensor_t s) {
+  if (s == TOUCH_SENSOR_A) {
+    return sensor.debounced_state;
   }
   return false;
 }
 
-unsigned long hal_ttp223_get_press_duration(TouchSensor_t sensor) {
-  if (sensor == TOUCH_SENSOR_A || sensor == TOUCH_SENSOR_B) {
-    if (sensors[sensor].debounced_state) {
-      return millis() - sensors[sensor].press_start_time;
+unsigned long hal_ttp223_get_press_duration(TouchSensor_t s) {
+  if (s == TOUCH_SENSOR_A) {
+    if (sensor.debounced_state) {
+      return millis() - sensor.press_start_time;
     }
   }
   return 0;
 }
 
 void hal_ttp223_print_event(const TouchEventData& event) {
-  Serial.print("[TTP223] Event: Sensor ");
-  Serial.print(event.sensor == TOUCH_SENSOR_A ? "A" : "B");
-  Serial.print(" - ");
+  Serial.print("[TTP223] Event: Sensor A - ");
   
   switch (event.event) {
     case TOUCH_EVENT_SINGLE_TAP:
@@ -377,36 +258,6 @@ void hal_ttp223_print_event(const TouchEventData& event) {
   if (event.duration > 0) {
     Serial.print(" (");
     Serial.print(event.duration);
-    Serial.print("ms)");
-  }
-  
-  Serial.println();
-}
-
-void hal_ttp223_print_gesture(const CombinedGestureData& gesture) {
-  Serial.print("[TTP223] Gesture: ");
-  
-  switch (gesture.gesture) {
-    case COMBINED_GESTURE_SWIPE_A_TO_B:
-      Serial.print("SWIPE_A_TO_B");
-      break;
-    case COMBINED_GESTURE_SWIPE_B_TO_A:
-      Serial.print("SWIPE_B_TO_A");
-      break;
-    case COMBINED_GESTURE_SIMULTANEOUS_PRESS:
-      Serial.print("SIMULTANEOUS_PRESS");
-      break;
-    case COMBINED_GESTURE_SIMULTANEOUS_RELEASE:
-      Serial.print("SIMULTANEOUS_RELEASE");
-      break;
-    default:
-      Serial.print("NONE");
-      break;
-  }
-  
-  if (gesture.duration > 0) {
-    Serial.print(" (");
-    Serial.print(gesture.duration);
     Serial.print("ms)");
   }
   

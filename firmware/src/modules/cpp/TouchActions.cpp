@@ -1,8 +1,8 @@
-#include "touch_actions.h"
-#include "core/state_machine.h"
+#include "../h/TouchActions.h"
+#include "core/h/StateMachine.h"
 
-#include "modes/mode_chat.h"
-#include "modes/mode_theme_preview.h"
+#include "modes/h/Chat.h"
+#include "modes/h/ThemePreview.h"
 
 void actions_init() {}
 
@@ -18,10 +18,6 @@ void actions_handle(GestureType gesture, DisplayMode_t mode) {
     case MODE_THEME_PREVIEW:
       if (gesture == GESTURE_SINGLE_TAP) {
         mode_theme_apply();
-      } else if (gesture == GESTURE_SWIPE_LEFT) {
-        mode_theme_prev();
-      } else if (gesture == GESTURE_SWIPE_RIGHT) {
-        mode_theme_next();
       }
       break;
       

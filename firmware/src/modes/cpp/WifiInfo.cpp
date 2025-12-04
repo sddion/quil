@@ -1,6 +1,6 @@
-#include "mode_wifi_info.h"
-#include "hal/hal_display.h"
-#include "modules/wifi_manager.h"
+#include "../h/WifiInfo.h"
+#include "hal/h/Display.h"
+#include "modules/h/WifiManager.h"
 
 void mode_wifi_init() {}
 

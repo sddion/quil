@@ -1,4 +1,4 @@
-#include "diagnostics.h"
+#include "../h/Diagnostics.h"
 #include "config.h"
 #include <Arduino.h>
 

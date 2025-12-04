@@ -4,9 +4,7 @@
 typedef enum {
   GESTURE_NONE,
   GESTURE_SINGLE_TAP,
-  GESTURE_DOUBLE_TAP,
-  GESTURE_SWIPE_LEFT,
-  GESTURE_SWIPE_RIGHT
+  GESTURE_DOUBLE_TAP
 } GestureType;
 
 void gesture_init();

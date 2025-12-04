@@ -1,10 +1,10 @@
-#include "mode_time.h"
+#include "../h/Time.h"
 #include "config.h"
-#include "hal/hal_display.h"
-#include "modules/ntp_client.h"
-#include "modules/config_store.h"
-#include "modules/weather_manager.h"
-#include "modules/battery_manager.h"
+#include "hal/h/Display.h"
+#include "modules/h/NtpClient.h"
+#include "modules/h/ConfigStore.h"
+#include "modules/h/WeatherManager.h"
+#include "modules/h/BatteryManager.h"
 
 static WeatherManager weatherManager;
 static WeatherData weatherData;

@@ -2,28 +2,28 @@
 #include "pins.h"
 #include "config.h"
 #include "types.h"
-#include "hal/hal_i2c.h"
-#include "hal/hal_display.h"
-#include "core/state_machine.h"
-#include "core/diagnostics.h"
-#include "modules/config_store.h"
-#include "modules/wifi_manager.h"
-#include "modules/ntp_client.h"
-#include "modules/ota_manager.h"
-#include "modules/http_server.h"
-#include "modules/gesture_manager.h"
-#include "modules/touch_actions.h"
-#include "modules/voice_manager.h"
-#include "modules/wake_manager.h"
-#include "modules/llm_bridge.h"
-#include "modules/animation_manager.h"
-#include "modules/battery_manager.h"
-#include "hal/hal_ttp223.h"
-#include "modes/mode_time.h"
+#include "hal/h/I2C.h"
+#include "hal/h/Display.h"
+#include "core/h/StateMachine.h"
+#include "core/h/Diagnostics.h"
+#include "modules/h/ConfigStore.h"
+#include "modules/h/WifiManager.h"
+#include "modules/h/NtpClient.h"
+#include "modules/h/OtaManager.h"
+#include "modules/h/HttpServer.h"
+#include "modules/h/GestureManager.h"
+#include "modules/h/TouchActions.h"
+#include "modules/h/VoiceManager.h"
+#include "modules/h/WakeManager.h"
+#include "modules/h/LlmBridge.h"
+#include "modules/h/AnimationManager.h"
+#include "modules/h/BatteryManager.h"
+#include "hal/h/Ttp223.h"
+#include "modes/h/Time.h"
 
-#include "modes/mode_chat.h"
-#include "modes/mode_theme_preview.h"
-#include "modes/mode_wifi_info.h"
+#include "modes/h/Chat.h"
+#include "modes/h/ThemePreview.h"
+#include "modes/h/WifiInfo.h"
 
 void setup() {
   Serial.begin(115200);
@@ -120,7 +120,7 @@ void loop() {
   
   hal_ttp223_update();
   
-  if (hal_ttp223_has_event(TOUCH_SENSOR_A) || hal_ttp223_has_event(TOUCH_SENSOR_B) || hal_ttp223_has_gesture()) {
+  if (hal_ttp223_has_event(TOUCH_SENSOR_A)) {
     GestureType gest = gesture_detect(0, millis());
     if (gest != GESTURE_NONE) {
       actions_handle(gest, state_get_mode());
