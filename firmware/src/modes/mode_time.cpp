@@ -59,7 +59,6 @@ void mode_time_render() {
   // Render battery status only if battery is connected
   if (battery_is_connected()) {
     uint8_t battery_pct = battery_get_percentage();
-    bool battery_low = battery_is_low();
     // Battery rendering removed as it was part of theme
     disp.setCursor(100, 0);
     disp.print(battery_pct);

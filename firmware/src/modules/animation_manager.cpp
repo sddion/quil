@@ -33,10 +33,7 @@ void anim_play(AnimationType type) {
       frame_array = angry_frames;
       total_frames = ANGRY_FRAMES;
       break;
-    case ANIM_THUGLIFE:
-      frame_array = thuglife_frames;
-      total_frames = THUGLIFE_FRAMES;
-      break;
+
     case ANIM_BOOT:
       frame_array = boot_frames;
       total_frames = BOOT_FRAMES;

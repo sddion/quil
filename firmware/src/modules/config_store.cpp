@@ -30,11 +30,11 @@ bool config_save_wifi(const char* ssid, const char* pass) {
   return true;
 #elif defined(ESP8266)
   EEPROM.write(0, strlen(ssid));
-  for (int i = 0; i < strlen(ssid); i++) {
+  for (size_t i = 0; i < strlen(ssid); i++) {
     EEPROM.write(1 + i, ssid[i]);
   }
   EEPROM.write(33, strlen(pass));
-  for (int i = 0; i < strlen(pass); i++) {
+  for (size_t i = 0; i < strlen(pass); i++) {
     EEPROM.write(34 + i, pass[i]);
   }
   return EEPROM.commit();

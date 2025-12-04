@@ -48,7 +48,7 @@ String ntp_get_date() {
   time_t rawTime = timeClient.getEpochTime();
   struct tm* tmInfo = localtime(&rawTime);
   
-  char buf[16];
+  char buf[32];
   snprintf(buf, sizeof(buf), "%04d/%02d/%02d", 
            tmInfo->tm_year + 1900, 
            tmInfo->tm_mon + 1, 

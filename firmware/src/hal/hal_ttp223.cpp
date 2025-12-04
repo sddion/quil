@@ -205,6 +205,11 @@ static void update_sensor(SensorData* sensor, TouchSensor_t id) {
         sensor->tap_count = 0;
       }
       break;
+      
+    case STATE_LONG_PRESS:
+      // Transition state - should not stay here
+      sensor->state = STATE_HOLDING;
+      break;
   }
 }
 

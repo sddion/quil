@@ -20,7 +20,7 @@
 #include "modules/battery_manager.h"
 #include "hal/hal_ttp223.h"
 #include "modes/mode_time.h"
-#include "modes/mode_music.h"
+
 #include "modes/mode_chat.h"
 #include "modes/mode_theme_preview.h"
 #include "modes/mode_wifi_info.h"
@@ -97,7 +97,7 @@ void setup() {
   hal_display_update();
   
   mode_time_init();
-  mode_music_init();
+
   mode_chat_init();
   mode_theme_init();
   mode_wifi_init();
@@ -154,10 +154,7 @@ void loop() {
       mode_time_update();
       mode_time_render();
       break;
-    case MODE_MUSIC:
-      mode_music_update();
-      mode_music_render();
-      break;
+
     case MODE_CHAT:
       mode_chat_update();
       mode_chat_render();
