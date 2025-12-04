@@ -2,13 +2,13 @@
 #include <Arduino.h>
 #include <Adafruit_SSD1306.h>
 
-bool hal_display_init();
-void hal_display_clear();
-void hal_display_text(const char* str, uint8_t x, uint8_t y);
-void hal_display_text_size(uint8_t size);
-void hal_display_rect(int16_t x, int16_t y, int16_t w, int16_t h, bool outline);
-void hal_display_bitmap(const uint8_t* bitmap);
-void hal_display_update();
-void hal_display_set_contrast(uint8_t level);
-uint8_t hal_display_get_contrast();
-Adafruit_SSD1306& hal_display_get_display();
+bool DisplayInit();
+void DisplayClear();
+void DisplayText(const char* str, uint8_t x, uint8_t y);
+void DisplayTextSize(uint8_t size);
+void DisplayRect(int16_t x, int16_t y, int16_t w, int16_t h, bool outline);
+void DisplayBitmap(const uint8_t* bitmap);
+void DisplayUpdate();
+void DisplaySetContrast(uint8_t level);
+uint8_t DisplayGetContrast();
+Adafruit_SSD1306& DisplayGetDisplay();

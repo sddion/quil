@@ -29,71 +29,71 @@ void setup() {
   Serial.begin(115200);
   delay(100);
   
-  hal_i2c_init();
-  if (!hal_display_init()) {
+  I2CInit();
+  if (!DisplayInit()) {
     Serial.println("Display fail");
     while(1);
   }
   
-  config_init();
-  diag_init();
-  state_init();
-  gesture_init();
-  actions_init();
+  ConfigInit();
+  DiagInit();
+  StateInit();
+  GestureInit();
+  ActionsInit();
   
   // Load and apply display contrast
   uint8_t contrast = 128;
   if (config_load_contrast(&contrast)) {
-    hal_display_set_contrast(contrast);
+    DisplaySetContrast(contrast);
   }
   
   // Initialize WiFi and load saved credentials
-  wifi_init();
+  WifiInit();
   
   // Check if we have saved WiFi credentials
-  if (wifi_has_saved_credentials()) {
+  if (WifiHasSavedCredentials()) {
     Serial.println("[Setup] Found saved WiFi credentials");
     char ssid[33], pass[65];
     config_load_wifi(ssid, pass);
     
     // Attempt connection - even if it fails, stay in STA mode and keep retrying
-    if (!wifi_connect(ssid, pass)) {
+    if (!WifiConnect(ssid, pass)) {
       Serial.println("[Setup] Initial connection failed, will retry in background");
       // Don't start AP mode - just keep trying to connect in background
     }
   } else {
     // No saved credentials - start AP mode for initial setup
     Serial.println("[Setup] No saved credentials - starting AP mode");
-    wifi_start_ap();
+    WifiStartAp();
   }
   
   // Always start HTTP server regardless of WiFi connection status
   // This allows web interface access once WiFi connects (even if connection was delayed)
-  http_init();
+  HttpInit();
   
-  ota_init();
-  voice_init();
-  wake_init();
-  bridge_init();
-  anim_init();
-  anim_play(ANIM_BOOT);
+  OtaInit();
+  VoiceInit();
+  WakeInit();
+  BridgeInit();
+  AnimInit();
+  AnimPlay(ANIM_BOOT);
   while(anim_is_playing()) {
-    anim_update();
+    AnimUpdate();
     delay(10);
   }
   
   // Clear display after boot animation
-  hal_display_clear();
-  hal_display_update();
+  DisplayClear();
+  DisplayUpdate();
   
-  mode_time_init();
+  TimeInit();
 
-  mode_chat_init();
-  mode_theme_init();
-  mode_wifi_init();
+  ChatInit();
+  ThemeInit();
+  WifiInfoInit();
   
   // Force initial render to prevent black screen
-  mode_time_force_render();
+  TimeForceRender();
   
   Serial.println("Quil ready");
   Serial.println("[HTTP] Web interface available at device IP when connected");
@@ -101,61 +101,61 @@ void setup() {
 
 void loop() {
   // WiFi reconnection task - handles automatic reconnection and internet checks
-  wifi_reconnect_task();
+  WifiReconnectTask();
   
-  state_update();
-  diag_update();
-  ota_handle();
-  http_handle();
+  StateUpdate();
+  DiagUpdate();
+  OtaHandle();
+  HttpHandle();
   
-  hal_ttp223_update();
+  TtpUpdate();
   
-  if (hal_ttp223_has_event(TOUCH_SENSOR_A)) {
+  if (TtpHasEvent(TOUCH_SENSOR_A)) {
     GestureType gest = gesture_detect(0, millis());
     if (gest != GESTURE_NONE) {
-      actions_handle(gest, state_get_mode());
+      actions_handle(gest, StateGetMode());
     }
   }
   
   if (wake_detect()) {
-    bridge_send_command("wake_quil");
-    voice_start_listening();
+    BridgeSendCommand("wake_quil");
+    VoiceStartListening();
   }
   
   if (voice_is_listening()) {
     uint8_t audio[256];
     size_t len = voice_read_buffer(audio, sizeof(audio));
     if (len > 0) {
-      bridge_send_audio(audio, len);
+      BridgeSendAudio(audio, len);
     }
   }
   
-  bridge_handle_response();
+  BridgeHandleResponse();
   
   if (anim_is_playing()) {
-    anim_update();
+    AnimUpdate();
     delay(10);
     return;
   }
   
-  DisplayMode_t mode = state_get_mode();
+  DisplayMode_t mode = StateGetMode();
   switch(mode) {
     case MODE_TIME_DATE:
-      mode_time_update();
-      mode_time_render();
+      TimeUpdate();
+      TimeRender();
       break;
 
     case MODE_CHAT:
-      mode_chat_update();
-      mode_chat_render();
+      ChatUpdate();
+      ChatRender();
       break;
     case MODE_THEME_PREVIEW:
-      mode_theme_update();
-      mode_theme_render();
+      ThemeUpdate();
+      ThemeRender();
       break;
     case MODE_WIFI_INFO:
-      mode_wifi_update();
-      mode_wifi_render();
+      WifiInfoUpdate();
+      WifiInfoRender();
       break;
   }
   

@@ -2,17 +2,16 @@
 
 #include <ArduinoOTA.h>
 
-void ota_init() {
+void OtaInit() {
   ArduinoOTA.setHostname("quil");
   ArduinoOTA.begin();
 }
 
-void ota_handle() {
+void OtaHandle() {
   ArduinoOTA.handle();
 }
 
 bool ota_start(const char* url) {
   return false;
 }
-
 

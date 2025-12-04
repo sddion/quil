@@ -8,8 +8,9 @@ static Preferences prefs;
 #define CONFIG_KEY_WEATHER_LOCATION "weather_location"
 #define CONFIG_KEY_TIMEZONE "timezone"
 #define CONFIG_KEY_CONTRAST "contrast"
+#define CONFIG_KEY_FIRST_BOOT "first_boot"
 
-bool config_init() {
+bool ConfigInit() {
   return prefs.begin(CONFIG_NAMESPACE, false);
 }
 
@@ -81,6 +82,7 @@ bool config_load_contrast(uint8_t* level) {
   return true;
 }
 
-void config_clear() {
+void ConfigClear() {
   prefs.clear();
 }
+

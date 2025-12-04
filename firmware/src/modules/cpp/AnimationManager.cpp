@@ -12,12 +12,12 @@ static const unsigned char* const* frame_array = nullptr;
 static bool playing = false;
 static const uint16_t frame_delay = 50;
 
-void anim_init() {
+void AnimInit() {
   current_anim = ANIM_NONE;
   playing = false;
 }
 
-void anim_play(AnimationType type) {
+void AnimPlay(AnimationType type) {
   current_anim = type;
   current_frame = 0;
   playing = true;
@@ -43,12 +43,12 @@ void anim_play(AnimationType type) {
   }
 }
 
-void anim_stop() {
+void AnimStop() {
   playing = false;
   current_anim = ANIM_NONE;
 }
 
-void anim_update() {
+void AnimUpdate() {
   if (!playing || frame_array == nullptr) return;
   
   unsigned long now = millis();
@@ -57,9 +57,9 @@ void anim_update() {
   last_frame_time = now;
   
   const unsigned char* frame = (const unsigned char*)pgm_read_ptr(&frame_array[current_frame]);
-  hal_display_clear();
-  hal_display_bitmap(frame);
-  hal_display_update();
+  DisplayClear();
+  DisplayBitmap(frame);
+  DisplayUpdate();
   
   current_frame++;
   if (current_frame >= total_frames) {
@@ -77,5 +77,3 @@ void anim_update() {
 bool anim_is_playing() {
   return playing;
 }
-
-

@@ -96,13 +96,13 @@ void handle_save() {
 }
 
 void handle_reset() {
-  config_clear();
+  ConfigClear();
   server.send(200, "text/plain", "OK");
   delay(1000);
   ESP.restart();
 }
 
-void http_init() {
+void HttpInit() {
   server.on("/", handle_root);
   server.on("/save", HTTP_POST, handle_save);
   server.on("/reset", HTTP_POST, handle_reset);
@@ -110,11 +110,11 @@ void http_init() {
   Serial.println("[HTTP] Server started");
 }
 
-void http_handle() {
+void HttpHandle() {
   server.handleClient();
 }
 
-void http_stop() {
+void HttpStop() {
   server.stop();
   Serial.println("[HTTP] Server stopped");
 }

@@ -17,7 +17,7 @@ static const unsigned long INITIAL_CONNECT_TIMEOUT = 20000; // 20 seconds for in
 static char saved_ssid[33] = {0};
 static char saved_pass[65] = {0};
 
-bool wifi_init() {
+bool WifiInit() {
   // Load saved credentials from EEPROM
   if (config_load_wifi(saved_ssid, saved_pass)) {
     Serial.println("[WiFi] Loaded credentials from EEPROM");
@@ -29,7 +29,7 @@ bool wifi_init() {
   return false;
 }
 
-bool wifi_connect(const char* ssid, const char* pass) {
+bool WifiConnect(const char* ssid, const char* pass) {
   if (ssid == NULL || pass == NULL || strlen(ssid) == 0) {
     Serial.println("[WiFi] Invalid credentials");
     return false;
@@ -71,7 +71,7 @@ bool wifi_connect(const char* ssid, const char* pass) {
     Serial.println(WiFi.localIP());
     
     // Check internet connectivity
-    internet_connected = wifi_check_internet();
+    internet_connected = WifiCheckInternet();
     if (internet_connected) {
       Serial.println("[WiFi] Internet access confirmed");
     } else {
@@ -89,7 +89,7 @@ bool wifi_connect(const char* ssid, const char* pass) {
   return false;
 }
 
-bool wifi_start_ap() {
+bool WifiStartAp() {
   Serial.println("[WiFi] Starting Access Point mode");
   WiFi.mode(WIFI_AP);
   
@@ -112,7 +112,7 @@ bool wifi_start_ap() {
   return result;
 }
 
-bool wifi_check_internet() {
+bool WifiCheckInternet() {
   if (WiFi.status() != WL_CONNECTED) {
     return false;
   }
@@ -130,7 +130,7 @@ bool wifi_check_internet() {
   return (httpCode == 204 || httpCode == 200);
 }
 
-void wifi_reconnect_task() {
+void WifiReconnectTask() {
   // Don't run reconnection in AP mode
   if (ap_mode) {
     return;
@@ -143,7 +143,7 @@ void wifi_reconnect_task() {
     last_wifi_check = now;
     
     bool wifi_ok = (WiFi.status() == WL_CONNECTED);
-    bool inet_ok = wifi_ok && wifi_check_internet();
+    bool inet_ok = wifi_ok && WifiCheckInternet();
     
     // Detect WiFi/Internet loss
     if (!wifi_ok || !inet_ok) {
@@ -176,47 +176,47 @@ void wifi_reconnect_task() {
   }
 }
 
-bool wifi_is_connected() {
+bool WifiIsConnected() {
   return wifi_connected && (WiFi.status() == WL_CONNECTED);
 }
 
-bool wifi_has_internet() {
+bool WifiHasInternet() {
   return internet_connected;
 }
 
-bool wifi_is_ap_mode() {
+bool WifiIsApMode() {
   return ap_mode;
 }
 
-String wifi_get_ip() {
+String WifiGetIp() {
   if (ap_mode) {
     return WiFi.softAPIP().toString();
   }
   return WiFi.localIP().toString();
 }
 
-String wifi_get_ssid() {
+String WifiGetSsid() {
   if (ap_mode) {
     return String(WIFI_AP_SSID);
   }
   return WiFi.SSID();
 }
 
-int wifi_get_rssi() {
+int WifiGetRssi() {
   if (ap_mode) {
     return 0;
   }
   return WiFi.RSSI();
 }
 
-void wifi_disconnect() {
+void WifiDisconnect() {
   Serial.println("[WiFi] Disconnecting...");
   WiFi.disconnect();
   wifi_connected = false;
   internet_connected = false;
 }
 
-bool wifi_has_saved_credentials() {
+bool WifiHasSavedCredentials() {
   char ssid[33], pass[65];
   return config_load_wifi(ssid, pass) && strlen(ssid) > 0;
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include <Arduino.h>
 
-void http_init();
-void http_handle();
-void http_stop();
+void HttpInit();
+void HttpHandle();
+void HttpStop();
 bool http_is_running();

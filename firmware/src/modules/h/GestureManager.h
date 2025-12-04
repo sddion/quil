@@ -7,5 +7,5 @@ typedef enum {
   GESTURE_DOUBLE_TAP
 } GestureType;
 
-void gesture_init();
+void GestureInit();
 GestureType gesture_detect(uint16_t touch, unsigned long ts);

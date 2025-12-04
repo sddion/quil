@@ -3,7 +3,7 @@
 #include <driver/i2s.h>
 #include "pins.h"
 
-bool hal_i2s_init_mic() {
+bool I2SInitMic() {
   i2s_config_t cfg = {
     .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),
     .sample_rate = 16000,
@@ -24,7 +24,7 @@ bool hal_i2s_init_mic() {
          i2s_set_pin(I2S_NUM_0, &pins) == ESP_OK;
 }
 
-bool hal_i2s_init_speaker() {
+bool I2SInitSpeaker() {
   i2s_config_t cfg = {
     .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX),
     .sample_rate = 16000,
@@ -45,13 +45,13 @@ bool hal_i2s_init_speaker() {
          i2s_set_pin(I2S_NUM_1, &pins) == ESP_OK;
 }
 
-size_t hal_i2s_read_mic(uint8_t* buffer, size_t len) {
+size_t I2SReadMic(uint8_t* buffer, size_t len) {
   size_t read = 0;
   i2s_read(I2S_NUM_0, buffer, len, &read, portMAX_DELAY);
   return read;
 }
 
-size_t hal_i2s_write_speaker(const uint8_t* data, size_t len) {
+size_t I2SWriteSpeaker(const uint8_t* data, size_t len) {
   size_t written = 0;
   i2s_write(I2S_NUM_1, data, len, &written, portMAX_DELAY);
   return written;

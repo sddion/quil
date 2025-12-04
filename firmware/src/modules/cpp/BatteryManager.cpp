@@ -6,13 +6,13 @@ static unsigned long last_update = 0;
 static bool is_low = false;
 static bool battery_connected = false;
 
-void battery_init() {
+void BatteryInit() {
   analogReadResolution(12);  // 12-bit ADC
   analogSetAttenuation(ADC_11db);  // Full range ~3.3V
-  battery_update();
+  BatteryUpdate();
 }
 
-void battery_update() {
+void BatteryUpdate() {
   unsigned long now = millis();
   if (now - last_update < BATTERY_UPDATE_MS && last_update != 0) return;
   last_update = now;

@@ -5,18 +5,18 @@ static bool listening = false;
 static uint8_t audio_buffer[512];
 static size_t buffer_pos = 0;
 
-void voice_init() {
-  hal_i2s_init_mic();
-  hal_i2s_init_speaker();
+void VoiceInit() {
+  I2SInitMic();
+  I2SInitSpeaker();
   listening = false;
 }
 
-void voice_start_listening() {
+void VoiceStartListening() {
   listening = true;
   buffer_pos = 0;
 }
 
-void voice_stop_listening() {
+void VoiceStopListening() {
   listening = false;
 }
 
@@ -26,11 +26,11 @@ bool voice_is_listening() {
 
 size_t voice_read_buffer(uint8_t* buf, size_t len) {
   if (!listening) return 0;
-  return hal_i2s_read_mic(buf, len);
+  return I2SReadMic(buf, len);
 }
 
 void voice_play_response(const uint8_t* data, size_t len) {
-  hal_i2s_write_speaker(data, len);
+  I2SWriteSpeaker(data, len);
 }
 
 float voice_get_rms() {

@@ -2,13 +2,13 @@
 
 static bool connected = false;
 
-void cloud_init() {
+void CloudInit() {
   connected = false;
 }
 
-void cloud_sync_prefs() {}
+void CloudSyncPrefs() {}
 
-void cloud_sync_logs() {}
+void CloudSyncLogs() {}
 
 bool cloud_is_connected() {
   return connected;

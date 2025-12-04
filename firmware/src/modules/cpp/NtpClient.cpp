@@ -13,19 +13,19 @@ static NTPClient timeClient(ntpUDP, NTP_SERVER, NTP_OFFSET_SEC, 60000);
 static bool synced = false;
 static int current_offset = NTP_OFFSET_SEC;
 
-void ntp_init() {
+void NtpInit() {
   timeClient.begin();
   timeClient.update();
   synced = timeClient.isTimeSet();
 }
 
-void ntp_update() {
+void NtpUpdate() {
   if (timeClient.update()) {
     synced = true;
   }
 }
 
-void ntp_set_timezone(int offset_sec) {
+void NtpSetTimezone(int offset_sec) {
   current_offset = offset_sec;
   timeClient.setTimeOffset(offset_sec);
   timeClient.forceUpdate();

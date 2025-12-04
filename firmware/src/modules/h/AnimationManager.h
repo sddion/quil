@@ -9,8 +9,8 @@ typedef enum {
   ANIM_BOOT
 } AnimationType;
 
-void anim_init();
-void anim_play(AnimationType type);
-void anim_stop();
-void anim_update();
+void AnimInit();
+void AnimPlay(AnimationType type);
+void AnimStop();
+void AnimUpdate();
 bool anim_is_playing();

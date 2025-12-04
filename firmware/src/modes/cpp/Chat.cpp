@@ -2,32 +2,32 @@
 #include "hal/h/Display.h"
 #include "../../modules/h/VoiceManager.h"
 
-void mode_chat_init() {
-  voice_init();
+void ChatInit() {
+  VoiceInit();
 }
 
-void mode_chat_update() {}
+void ChatUpdate() {}
 
-void mode_chat_render() {
-  hal_display_clear();
-  hal_display_text("CHAT", 45, 10);
+void ChatRender() {
+  DisplayClear();
+  DisplayText("CHAT", 45, 10);
   bool active = voice_is_listening();
-  hal_display_text(active ? "Listening..." : "Idle", 30, 30);
-  hal_display_update();
+  DisplayText(active ? "Listening..." : "Idle", 30, 30);
+  DisplayUpdate();
 }
 
-void mode_chat_start_listen() {
-  voice_start_listening();
+void ChatStartListen() {
+  VoiceStartListening();
 }
 
-void mode_chat_stop_listen() {
-  voice_stop_listening();
+void ChatStopListen() {
+  VoiceStopListening();
 }
 
-void mode_chat_toggle_mute() {
+void ChatToggleMute() {
   if (voice_is_listening()) {
-    voice_stop_listening();
+    VoiceStopListening();
   } else {
-    voice_start_listening();
+    VoiceStartListening();
   }
 }

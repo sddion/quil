@@ -1,7 +1,7 @@
 #pragma once
 #include <Arduino.h>
 
-bool hal_i2s_init_mic();
-bool hal_i2s_init_speaker();
-size_t hal_i2s_read_mic(uint8_t* buffer, size_t len);
-size_t hal_i2s_write_speaker(const uint8_t* data, size_t len);
+bool I2SInitMic();
+bool I2SInitSpeaker();
+size_t I2SReadMic(uint8_t* buffer, size_t len);
+size_t I2SWriteSpeaker(const uint8_t* data, size_t len);

@@ -12,16 +12,16 @@ static char weatherApiKey[65];
 static char weatherLocation[65];
 static unsigned long lastWeatherUpdate = 0;
 
-void mode_time_init() {
-  ntp_init();
+void TimeInit() {
+  NtpInit();
   
   // Load and apply timezone offset
   int tz_offset = NTP_OFFSET_SEC;
   if (config_load_timezone(&tz_offset)) {
-    ntp_set_timezone(tz_offset);
+    NtpSetTimezone(tz_offset);
   }
   
-  battery_init();
+  BatteryInit();
   
   if (!config_load_weather(weatherApiKey, weatherLocation)) {
     // No saved weather config - initialize to empty
@@ -30,23 +30,23 @@ void mode_time_init() {
   }
 }
 
-void mode_time_update() {
-  ntp_update();
-  battery_update();
+void TimeUpdate() {
+  NtpUpdate();
+  BatteryUpdate();
   if (millis() - lastWeatherUpdate > 900000) { // 15 minutes
     lastWeatherUpdate = millis();
     weatherData = weatherManager.getWeatherData(weatherApiKey, weatherLocation);
   }
 }
 
-void mode_time_render() {
-  hal_display_clear();
+void TimeRender() {
+  DisplayClear();
   
   String time_str = ntp_get_time();
   String date_str = ntp_get_date();
   String day_str = ntp_get_day();
   
-  Adafruit_SSD1306& disp = hal_display_get_display(); 
+  Adafruit_SSD1306& disp = DisplayGetDisplay(); 
   
   // Placeholder rendering until new themes are added
   disp.setTextSize(1);
@@ -65,14 +65,14 @@ void mode_time_render() {
     disp.print("%");
   }
   
-  hal_display_update();
+  DisplayUpdate();
 }
 
-void mode_time_force_render() {
-  mode_time_render();
+void TimeForceRender() {
+  TimeRender();
 }
 
-void mode_time_set_theme(DisplayTheme_t theme) {
+void TimeSetTheme(DisplayTheme_t theme) {
   // Theme switching disabled
   config_save_theme((uint8_t)theme);
 }

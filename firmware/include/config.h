@@ -6,7 +6,6 @@
 #define DISPLAY_ADDR 0x3C
 
 // I2C pins (ESP32 default)
-// I2C pins (ESP32 default)
 #define I2C_SDA 21
 #define I2C_SCL 22
 

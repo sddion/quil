@@ -2,5 +2,5 @@
 #include "GestureManager.h"
 #include "types.h"
 
-void actions_init();
+void ActionsInit();
 void actions_handle(GestureType gesture, DisplayMode_t mode);

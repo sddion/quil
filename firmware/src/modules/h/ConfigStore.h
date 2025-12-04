@@ -1,7 +1,7 @@
 #pragma once
 #include <Arduino.h>
 
-bool config_init();
+bool ConfigInit();
 bool config_save_wifi(const char* ssid, const char* pass);
 bool config_load_wifi(char* ssid, char* pass);
 bool config_save_string(const char* key, const char* val);
@@ -14,4 +14,3 @@ bool config_save_timezone(int offset_sec);
 bool config_load_timezone(int* offset_sec);
 bool config_save_contrast(uint8_t level);
 bool config_load_contrast(uint8_t* level);
-void config_clear();

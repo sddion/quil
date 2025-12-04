@@ -14,8 +14,8 @@
 #define BATTERY_VOLTAGE_MIN 3.0
 #define BATTERY_VOLTAGE_DIVIDER 2.0
 
-void battery_init();
-void battery_update();
+void BatteryInit();
+void BatteryUpdate();
 float battery_get_voltage();
 uint8_t battery_get_percentage();
 bool battery_is_low();

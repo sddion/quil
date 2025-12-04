@@ -44,17 +44,17 @@ struct CombinedGestureData {
 #define LONG_PRESS_TIME 800
 
 // HAL functions
-void hal_ttp223_init();
-void hal_ttp223_update();
+void TtpInit();
+void TtpUpdate();
 
 
 // Single sensor event queries
-bool hal_ttp223_has_event(TouchSensor_t sensor);
-TouchEventData hal_ttp223_get_event(TouchSensor_t sensor);
+bool TtpHasEvent(TouchSensor_t sensor);
+TouchEventData TtpGetEvent(TouchSensor_t sensor);
 
 // State queries
-bool hal_ttp223_is_pressed(TouchSensor_t sensor);
-unsigned long hal_ttp223_get_press_duration(TouchSensor_t sensor);
+bool TtpIsPressed(TouchSensor_t sensor);
+unsigned long TtpGetPressDuration(TouchSensor_t sensor);
 
 // Debug functions
-void hal_ttp223_print_event(const TouchEventData& event);
+void TtpPrintEvent(const TouchEventData& event);

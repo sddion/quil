@@ -4,7 +4,7 @@
 static float threshold = 500.0f;
 static float last_confidence = 0.0f;
 
-void wake_init() {
+void WakeInit() {
   threshold = 500.0f;
 }
 

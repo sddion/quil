@@ -39,7 +39,7 @@ static void update_sensor(SensorData* s, TouchSensor_t id);
 static bool read_pin_debounced(SensorData* s);
 static void trigger_event(SensorData* s, TouchSensor_t id, TouchEvent_t event, unsigned long duration = 0);
 
-void hal_ttp223_init() {
+void TtpInit() {
   sensor.pin = PIN_TOUCH_A;
   sensor.state = STATE_IDLE;
   sensor.current_reading = false;
@@ -61,7 +61,7 @@ void hal_ttp223_init() {
   Serial.println(PIN_TOUCH_A);
 }
 
-void hal_ttp223_update() {
+void TtpUpdate() {
   update_sensor(&sensor, TOUCH_SENSOR_A);
 }
 
@@ -183,20 +183,20 @@ static void trigger_event(SensorData* s, TouchSensor_t id, TouchEvent_t event, u
     s->pending_event.duration = duration;
     s->has_pending_event = true;
     
-    hal_ttp223_print_event(s->pending_event);
+    TtpPrintEvent(s->pending_event);
   }
 }
 
 
 
-bool hal_ttp223_has_event(TouchSensor_t s) {
+bool TtpHasEvent(TouchSensor_t s) {
   if (s == TOUCH_SENSOR_A) {
     return sensor.has_pending_event;
   }
   return false;
 }
 
-TouchEventData hal_ttp223_get_event(TouchSensor_t s) {
+TouchEventData TtpGetEvent(TouchSensor_t s) {
   TouchEventData event;
   event.sensor = s;
   event.event = TOUCH_EVENT_NONE;
@@ -215,14 +215,14 @@ TouchEventData hal_ttp223_get_event(TouchSensor_t s) {
 
 
 
-bool hal_ttp223_is_pressed(TouchSensor_t s) {
+bool TtpIsPressed(TouchSensor_t s) {
   if (s == TOUCH_SENSOR_A) {
     return sensor.debounced_state;
   }
   return false;
 }
 
-unsigned long hal_ttp223_get_press_duration(TouchSensor_t s) {
+unsigned long TtpGetPressDuration(TouchSensor_t s) {
   if (s == TOUCH_SENSOR_A) {
     if (sensor.debounced_state) {
       return millis() - sensor.press_start_time;
@@ -231,7 +231,7 @@ unsigned long hal_ttp223_get_press_duration(TouchSensor_t s) {
   return 0;
 }
 
-void hal_ttp223_print_event(const TouchEventData& event) {
+void TtpPrintEvent(const TouchEventData& event) {
   Serial.print("[TTP223] Event: Sensor A - ");
   
   switch (event.event) {
