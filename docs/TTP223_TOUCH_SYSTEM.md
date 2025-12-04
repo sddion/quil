@@ -11,9 +11,6 @@ The Quil firmware uses one TTP223 capacitive touch sensor for user interaction. 
 #### ESP32
 - **Sensor A**: GPIO34 (ADC1_CH6) - Input only pin
 
-#### ESP8266
-- **Sensor A**: D5 (GPIO14)
-
 ### Sensor Characteristics
 - **Type**: TTP223 Capacitive Touch Sensor
 - **Signal**: Active-HIGH (outputs HIGH when touched)
@@ -213,7 +210,7 @@ When events occur, automatic debug output is generated:
 
 - **Non-blocking**: All operations use `millis()` for timing
 - **Memory**: ~100 bytes static allocation (no heap usage)
-- **CPU**: Minimal overhead, suitable for 80MHz ESP8266
+- **CPU**: Minimal overhead
 - **Latency**: 
   - Tap detection: 50-350ms
   - Long press: 850ms
@@ -246,4 +243,3 @@ Potential additions to the system:
 
 - TTP223 Datasheet: [Tontek TTP223-BA6 Datasheet](https://www.tontek.com.tw/uploads/product/106/TTP223-BA6.pdf)
 - ESP32 GPIO Reference: [ESP32 Pin Reference](https://randomnerdtutorials.com/esp32-pinout-reference-gpios/)
-- ESP8266 GPIO Reference: [ESP8266 Pin Reference](https://randomnerdtutorials.com/esp8266-pinout-reference-gpios/)

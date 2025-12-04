@@ -90,6 +90,4 @@ This architecture keeps the resource-intensive AI processing off of the microcon
 
 *   **Audio Response**: The synthesized audio response is sent as a binary stream of PCM or WAV data.
 
-## ESP8266 Support
 
-The voice integration features are **not supported on the ESP8266** due to its lack of I2S hardware. On the ESP8266, the voice-related functions are disabled and will not have any effect.

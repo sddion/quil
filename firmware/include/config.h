@@ -28,7 +28,6 @@
 #define NTP_OFFSET_SEC 0
 #define NTP_UPDATE_MS 3600000  // Update every hour
 
-// Audio I2S pins (ESP32 only)
 // Audio I2S pins
 #define I2S_MIC_BCK 26
 #define I2S_MIC_WS 25
