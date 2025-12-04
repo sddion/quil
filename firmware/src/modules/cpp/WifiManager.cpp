@@ -1,13 +1,8 @@
 #include "../h/WifiManager.h"
 #include "../h/ConfigStore.h"
 #include "config.h"
-#ifdef ESP32
 #include <WiFi.h>
 #include <HTTPClient.h>
-#elif defined(ESP8266)
-#include <ESP8266WiFi.h>
-#include <ESP8266HTTPClient.h>
-#endif
 
 // WiFi state tracking
 static bool wifi_connected = false;
@@ -55,10 +50,7 @@ bool wifi_connect(const char* ssid, const char* pass) {
   WiFi.mode(WIFI_STA);
   WiFi.setAutoReconnect(true);
   
-  #ifdef ESP8266
-  WiFi.persistent(true);
-  WiFi.setSleepMode(WIFI_NONE_SLEEP);
-  #endif
+
   
   WiFi.begin(ssid, pass);
   

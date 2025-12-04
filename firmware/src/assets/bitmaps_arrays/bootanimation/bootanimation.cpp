@@ -2358,13 +2358,9 @@ const unsigned char _bootanimation_034 [] PROGMEM = {
 
 // Array of all bitmaps for convenience. (Total bytes used to store images in PROGMEM = 36400)
 const unsigned char* const boot_frames[] PROGMEM = {
-  _bootanimation_000, _bootanimation_001, _bootanimation_002, _bootanimation_003,
-  _bootanimation_004, _bootanimation_005, _bootanimation_006, _bootanimation_007,
-  _bootanimation_008, _bootanimation_009, _bootanimation_010, _bootanimation_011,
-  _bootanimation_012, _bootanimation_013, _bootanimation_014, _bootanimation_015,
-  _bootanimation_016, _bootanimation_017, _bootanimation_018, _bootanimation_019,
-  _bootanimation_020, _bootanimation_021, _bootanimation_022, _bootanimation_023,
-  _bootanimation_024, _bootanimation_025, _bootanimation_026, _bootanimation_027,
-  _bootanimation_028, _bootanimation_029, _bootanimation_030, _bootanimation_031,
+  _bootanimation_000, _bootanimation_001, _bootanimation_002, _bootanimation_003, _bootanimation_004, _bootanimation_005, _bootanimation_006, _bootanimation_007,
+  _bootanimation_008, _bootanimation_009, _bootanimation_010, _bootanimation_011, _bootanimation_012, _bootanimation_013, _bootanimation_014, _bootanimation_015,
+  _bootanimation_016, _bootanimation_017, _bootanimation_018, _bootanimation_019, _bootanimation_020, _bootanimation_021, _bootanimation_022, _bootanimation_023,
+  _bootanimation_024, _bootanimation_025, _bootanimation_026, _bootanimation_027, _bootanimation_028, _bootanimation_029, _bootanimation_030, _bootanimation_031,
   _bootanimation_032, _bootanimation_033, _bootanimation_034
 };

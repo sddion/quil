@@ -7,12 +7,8 @@ static bool is_low = false;
 static bool battery_connected = false;
 
 void battery_init() {
-  #ifdef ESP8266
-    pinMode(BATTERY_ADC_PIN, INPUT);
-  #elif defined(ESP32)
-    analogReadResolution(12);  // 12-bit ADC
-    analogSetAttenuation(ADC_11db);  // Full range ~3.3V
-  #endif
+  analogReadResolution(12);  // 12-bit ADC
+  analogSetAttenuation(ADC_11db);  // Full range ~3.3V
   battery_update();
 }
 
@@ -30,14 +26,9 @@ void battery_update() {
   float adc_average = adc_sum / (float)BATTERY_SAMPLES;
   
   // Convert ADC to voltage
-  #ifdef ESP8266
-    // ESP8266 ADC is 0-1V, with voltage divider it can measure higher
-    battery_voltage = (adc_average / BATTERY_ADC_MAX) * BATTERY_VOLTAGE_DIVIDER;
-  #elif defined(ESP32)
-    // ESP32 ADC with 11dB attenuation can measure ~0-3.3V
-    // Adjust for voltage divider if using one
-    battery_voltage = (adc_average / BATTERY_ADC_MAX) * 3.3 * BATTERY_VOLTAGE_DIVIDER;
-  #endif
+  // ESP32 ADC with 11dB attenuation can measure ~0-3.3V
+  // Adjust for voltage divider if using one
+  battery_voltage = (adc_average / BATTERY_ADC_MAX) * 3.3 * BATTERY_VOLTAGE_DIVIDER;
   
   // Check if battery is connected (voltage should be between reasonable range)
   // If voltage is too low (< 2V) or exactly 0, battery is likely not connected

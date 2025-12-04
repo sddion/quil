@@ -2,11 +2,7 @@
 #include <WiFiClient.h>
 #include <ArduinoJson.h>
 
-#ifdef ESP32
 #include <HTTPClient.h> // ESP32 HTTP client library
-#elif defined(ESP8266)
-#include <ESP8266HTTPClient.h> // ESP8266 HTTP client library
-#endif
 
 WeatherManager::WeatherManager() {}
 
