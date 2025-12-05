@@ -10,7 +10,6 @@
 #include "modules/h/WifiManager.h"
 #include "modules/h/NtpClient.h"
 #include "modules/h/OtaManager.h"
-#include "modules/h/HttpServer.h"
 #include "modules/h/GestureManager.h"
 #include "modules/h/TouchActions.h"
 #include "modules/h/VoiceManager.h"
@@ -78,7 +77,6 @@ void setup() {
   } else {
     WifiStartAp();
   }
-  HttpInit();
   
   // Stage 3: Time
   BootLoaderShowStage(BOOT_STAGE_TIME, isFirstBoot);
@@ -116,7 +114,6 @@ void setup() {
   TimeForceRender();
   
   Serial.println("Quil ready");
-  Serial.println("[HTTP] Web interface available at device IP when connected");
 }
 
 void loop() {
@@ -126,7 +123,6 @@ void loop() {
   StateUpdate();
   DiagUpdate();
   OtaHandle();
-  HttpHandle();
   
   TtpUpdate();
   
