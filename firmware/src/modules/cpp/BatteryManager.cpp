@@ -58,24 +58,24 @@ void BatteryUpdate() {
   is_low = (battery_percentage < 20);
 }
 
-float battery_get_voltage() {
+float BatteryGetVoltage() {
   return battery_voltage;
 }
 
-uint8_t battery_get_percentage() {
+uint8_t BatteryGetPercentage() {
   return battery_percentage;
 }
 
-bool battery_is_low() {
+bool BatteryIsLow() {
   return is_low;
 }
 
-bool battery_is_charging() {
+bool BatteryIsCharging() {
   // For now, return false. Implement charging detection if needed
   // Could check for voltage rising or use a charge detect pin
   return false;
 }
 
-bool battery_is_connected() {
+bool BatteryIsConnected() {
   return battery_connected;
 }

@@ -6,7 +6,7 @@
 
 void ActionsInit() {}
 
-void actions_handle(GestureType gesture, DisplayMode_t mode) {
+void ActionsHandle(GestureType gesture, DisplayMode_t mode) {
   if (gesture == GESTURE_DOUBLE_TAP) {
     StateCycleMode();
     return;

@@ -80,16 +80,16 @@ void handle_save() {
   String wl = body.substring(wl_idx, wl_end);
   String c_str = body.substring(c_idx, c_end);
   
-  config_save_wifi(ssid.c_str(), pass.c_str());
+  ConfigSaveWifi(ssid.c_str(), pass.c_str());
   if (tz_str.length() > 0) {
     int tz_offset = tz_str.toInt();
-    config_save_timezone(tz_offset);
+    ConfigSaveTimezone(tz_offset);
   }
   if (c_str.length() > 0) {
     uint8_t contrast = c_str.toInt();
-    config_save_contrast(contrast);
+    ConfigSaveContrast(contrast);
   }
-  config_save_weather(wk.c_str(), wl.c_str());
+  ConfigSaveWeather(wk.c_str(), wl.c_str());
   server.send(200, "text/plain", "OK");
   delay(1000);
   ESP.restart();
@@ -119,6 +119,6 @@ void HttpStop() {
   Serial.println("[HTTP] Server stopped");
 }
 
-bool http_is_running() {
+bool HttpIsRunning() {
   return true; // Server always runs after init
 }

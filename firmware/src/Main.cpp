@@ -43,7 +43,7 @@ void setup() {
   
   // Load and apply display contrast
   uint8_t contrast = 128;
-  if (config_load_contrast(&contrast)) {
+  if (ConfigLoadContrast(&contrast)) {
     DisplaySetContrast(contrast);
   }
   
@@ -54,7 +54,7 @@ void setup() {
   if (WifiHasSavedCredentials()) {
     Serial.println("[Setup] Found saved WiFi credentials");
     char ssid[33], pass[65];
-    config_load_wifi(ssid, pass);
+    ConfigLoadWifi(ssid, pass);
     
     // Attempt connection - even if it fails, stay in STA mode and keep retrying
     if (!WifiConnect(ssid, pass)) {
@@ -77,7 +77,7 @@ void setup() {
   BridgeInit();
   AnimInit();
   AnimPlay(ANIM_BOOT);
-  while(anim_is_playing()) {
+  while(AnimIsPlaying()) {
     AnimUpdate();
     delay(10);
   }
@@ -111,20 +111,20 @@ void loop() {
   TtpUpdate();
   
   if (TtpHasEvent(TOUCH_SENSOR_A)) {
-    GestureType gest = gesture_detect(0, millis());
+    GestureType gest = GestureDetect(0, millis());
     if (gest != GESTURE_NONE) {
-      actions_handle(gest, StateGetMode());
+      ActionsHandle(gest, StateGetMode());
     }
   }
   
-  if (wake_detect()) {
+  if (WakeDetect()) {
     BridgeSendCommand("wake_quil");
     VoiceStartListening();
   }
   
-  if (voice_is_listening()) {
+  if (VoiceIsListening()) {
     uint8_t audio[256];
-    size_t len = voice_read_buffer(audio, sizeof(audio));
+    size_t len = VoiceReadBuffer(audio, sizeof(audio));
     if (len > 0) {
       BridgeSendAudio(audio, len);
     }
@@ -132,7 +132,7 @@ void loop() {
   
   BridgeHandleResponse();
   
-  if (anim_is_playing()) {
+  if (AnimIsPlaying()) {
     AnimUpdate();
     delay(10);
     return;

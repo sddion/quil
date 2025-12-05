@@ -19,7 +19,7 @@ static char saved_pass[65] = {0};
 
 bool WifiInit() {
   // Load saved credentials from EEPROM
-  if (config_load_wifi(saved_ssid, saved_pass)) {
+  if (ConfigLoadWifi(saved_ssid, saved_pass)) {
     Serial.println("[WiFi] Loaded credentials from EEPROM");
     Serial.print("[WiFi] SSID: ");
     Serial.println(saved_ssid);
@@ -42,7 +42,7 @@ bool WifiConnect(const char* ssid, const char* pass) {
   saved_pass[sizeof(saved_pass) - 1] = '\0';
   
   // Save to EEPROM
-  config_save_wifi(saved_ssid, saved_pass);
+  ConfigSaveWifi(saved_ssid, saved_pass);
   
   Serial.print("[WiFi] Connecting to: ");
   Serial.println(ssid);
@@ -218,5 +218,5 @@ void WifiDisconnect() {
 
 bool WifiHasSavedCredentials() {
   char ssid[33], pass[65];
-  return config_load_wifi(ssid, pass) && strlen(ssid) > 0;
+  return ConfigLoadWifi(ssid, pass) && strlen(ssid) > 0;
 }

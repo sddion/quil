@@ -23,13 +23,13 @@ void BridgeHandleResponse() {
     uint8_t buf[256];
     size_t len = Serial.readBytes(buf, sizeof(buf));
     if (len > 0) {
-      voice_play_response(buf, len);
+      VoicePlayResponse(buf, len);
       response_ready = true;
     }
   }
 }
 
-bool bridge_has_response() {
+bool BridgeHasResponse() {
   bool r = response_ready;
   response_ready = false;
   return r;

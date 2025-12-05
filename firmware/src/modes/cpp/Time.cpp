@@ -17,13 +17,13 @@ void TimeInit() {
   
   // Load and apply timezone offset
   int tz_offset = NTP_OFFSET_SEC;
-  if (config_load_timezone(&tz_offset)) {
+  if (ConfigLoadTimezone(&tz_offset)) {
     NtpSetTimezone(tz_offset);
   }
   
   BatteryInit();
   
-  if (!config_load_weather(weatherApiKey, weatherLocation)) {
+  if (!ConfigLoadWeather(weatherApiKey, weatherLocation)) {
     // No saved weather config - initialize to empty
     weatherApiKey[0] = '\0';
     weatherLocation[0] = '\0';
@@ -42,9 +42,9 @@ void TimeUpdate() {
 void TimeRender() {
   DisplayClear();
   
-  String time_str = ntp_get_time();
-  String date_str = ntp_get_date();
-  String day_str = ntp_get_day();
+  String time_str = NtpGetTime();
+  String date_str = NtpGetDate();
+  String day_str = NtpGetDay();
   
   Adafruit_SSD1306& disp = DisplayGetDisplay(); 
   
@@ -57,8 +57,8 @@ void TimeRender() {
   disp.println(day_str);
 
   // Render battery status only if battery is connected
-  if (battery_is_connected()) {
-    uint8_t battery_pct = battery_get_percentage();
+  if (BatteryIsConnected()) {
+    uint8_t battery_pct = BatteryGetPercentage();
     // Battery rendering removed as it was part of theme
     disp.setCursor(100, 0);
     disp.print(battery_pct);
@@ -74,5 +74,5 @@ void TimeForceRender() {
 
 void TimeSetTheme(DisplayTheme_t theme) {
   // Theme switching disabled
-  config_save_theme((uint8_t)theme);
+  ConfigSaveTheme((uint8_t)theme);
 }

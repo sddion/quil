@@ -5,7 +5,7 @@ void GestureInit() {
   TtpInit();
 }
 
-GestureType gesture_detect(uint16_t unused, unsigned long unused_ts) {
+GestureType GestureDetect(uint16_t unused, unsigned long unused_ts) {
   TtpUpdate();
   
   if (TtpHasEvent(TOUCH_SENSOR_A)) {

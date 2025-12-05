@@ -8,10 +8,10 @@
 void NtpInit();
 void NtpUpdate();
 void NtpSetTimezone(int offset_sec);
-String ntp_get_time();
-String ntp_get_date();
-String ntp_get_day();
-int ntp_get_hour();
-int ntp_get_minute();
-int ntp_get_second();
-bool ntp_is_synced();
+String NtpGetTime();
+String NtpGetDate();
+String NtpGetDay();
+int NtpGetHour();
+int NtpGetMinute();
+int NtpGetSecond();
+bool NtpIsSynced();

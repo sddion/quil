@@ -2,15 +2,16 @@
 #include <Arduino.h>
 
 bool ConfigInit();
-bool config_save_wifi(const char* ssid, const char* pass);
-bool config_load_wifi(char* ssid, char* pass);
-bool config_save_string(const char* key, const char* val);
-String config_load_string(const char* key);
-bool config_save_theme(uint8_t theme);
-bool config_load_theme(uint8_t* theme);
-bool config_save_weather(const char* api_key, const char* location);
-bool config_load_weather(char* api_key, char* location);
-bool config_save_timezone(int offset_sec);
-bool config_load_timezone(int* offset_sec);
-bool config_save_contrast(uint8_t level);
-bool config_load_contrast(uint8_t* level);
+bool ConfigSaveWifi(const char* ssid, const char* pass);
+bool ConfigLoadWifi(char* ssid, char* pass);
+bool ConfigSaveString(const char* key, const char* val);
+String ConfigLoadString(const char* key);
+bool ConfigSaveTheme(uint8_t theme);
+bool ConfigLoadTheme(uint8_t* theme);
+bool ConfigSaveWeather(const char* api_key, const char* location);
+bool ConfigLoadWeather(char* api_key, char* location);
+bool ConfigSaveTimezone(int offset_sec);
+bool ConfigLoadTimezone(int* offset_sec);
+bool ConfigSaveContrast(uint8_t level);
+bool ConfigLoadContrast(uint8_t* level);
+void ConfigClear();

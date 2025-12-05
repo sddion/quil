@@ -13,4 +13,4 @@ void AnimInit();
 void AnimPlay(AnimationType type);
 void AnimStop();
 void AnimUpdate();
-bool anim_is_playing();
+bool AnimIsPlaying();

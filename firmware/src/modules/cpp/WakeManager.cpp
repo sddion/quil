@@ -8,10 +8,10 @@ void WakeInit() {
   threshold = 500.0f;
 }
 
-bool wake_detect() {
-  if (!voice_is_listening()) return false;
+bool WakeDetect() {
+  if (!VoiceIsListening()) return false;
   
-  float rms = voice_get_rms();
+  float rms = VoiceGetRms();
   last_confidence = rms;
   
   if (rms > threshold) {
@@ -21,10 +21,10 @@ bool wake_detect() {
   return false;
 }
 
-void wake_set_threshold(float thresh) {
+void WakeSetThreshold(float thresh) {
   threshold = thresh;
 }
 
-float wake_get_confidence() {
+float WakeGetConfidence() {
   return last_confidence;
 }

@@ -20,20 +20,20 @@ void VoiceStopListening() {
   listening = false;
 }
 
-bool voice_is_listening() {
+bool VoiceIsListening() {
   return listening;
 }
 
-size_t voice_read_buffer(uint8_t* buf, size_t len) {
+size_t VoiceReadBuffer(uint8_t* buf, size_t len) {
   if (!listening) return 0;
   return I2SReadMic(buf, len);
 }
 
-void voice_play_response(const uint8_t* data, size_t len) {
+void VoicePlayResponse(const uint8_t* data, size_t len) {
   I2SWriteSpeaker(data, len);
 }
 
-float voice_get_rms() {
+float VoiceGetRms() {
   if (buffer_pos < 100) return 0.0f;
   float sum = 0;
   for (size_t i = 0; i < buffer_pos; i += 2) {

@@ -16,8 +16,8 @@
 
 void BatteryInit();
 void BatteryUpdate();
-float battery_get_voltage();
-uint8_t battery_get_percentage();
-bool battery_is_low();
-bool battery_is_charging();
-bool battery_is_connected();
+float BatteryGetVoltage();
+uint8_t BatteryGetPercentage();
+bool BatteryIsLow();
+bool BatteryIsCharging();
+bool BatteryIsConnected();

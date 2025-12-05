@@ -74,6 +74,6 @@ void AnimUpdate() {
   }
 }
 
-bool anim_is_playing() {
+bool AnimIsPlaying() {
   return playing;
 }

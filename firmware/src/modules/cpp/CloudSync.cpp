@@ -10,6 +10,6 @@ void CloudSyncPrefs() {}
 
 void CloudSyncLogs() {}
 
-bool cloud_is_connected() {
+bool CloudIsConnected() {
   return connected;
 }

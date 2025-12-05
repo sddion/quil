@@ -8,4 +8,4 @@ typedef enum {
 } GestureType;
 
 void GestureInit();
-GestureType gesture_detect(uint16_t touch, unsigned long ts);
+GestureType GestureDetect(uint16_t touch, unsigned long ts);

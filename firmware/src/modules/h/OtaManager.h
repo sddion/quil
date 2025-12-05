@@ -3,4 +3,4 @@
 
 void OtaInit();
 void OtaHandle();
-bool ota_start(const char* url);
+bool OtaStart(const char* url);

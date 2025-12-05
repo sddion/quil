@@ -11,7 +11,7 @@ void ChatUpdate() {}
 void ChatRender() {
   DisplayClear();
   DisplayText("CHAT", 45, 10);
-  bool active = voice_is_listening();
+  bool active = VoiceIsListening();
   DisplayText(active ? "Listening..." : "Idle", 30, 30);
   DisplayUpdate();
 }
@@ -25,7 +25,7 @@ void ChatStopListen() {
 }
 
 void ChatToggleMute() {
-  if (voice_is_listening()) {
+  if (VoiceIsListening()) {
     VoiceStopListening();
   } else {
     VoiceStartListening();

@@ -3,4 +3,4 @@
 #include "types.h"
 
 void ActionsInit();
-void actions_handle(GestureType gesture, DisplayMode_t mode);
+void ActionsHandle(GestureType gesture, DisplayMode_t mode);

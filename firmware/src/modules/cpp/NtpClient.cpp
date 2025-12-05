@@ -31,7 +31,7 @@ void NtpSetTimezone(int offset_sec) {
   timeClient.forceUpdate();
 }
 
-String ntp_get_time() {
+String NtpGetTime() {
   if (!synced || !timeClient.isTimeSet()) return "--:--";
   
   int hr = timeClient.getHours();
@@ -42,7 +42,7 @@ String ntp_get_time() {
   return String(buf);
 }
 
-String ntp_get_date() {
+String NtpGetDate() {
   if (!synced || !timeClient.isTimeSet()) return "----/--/--";
   
   time_t rawTime = timeClient.getEpochTime();
@@ -56,7 +56,7 @@ String ntp_get_date() {
   return String(buf);
 }
 
-String ntp_get_day() {
+String NtpGetDay() {
   if (!synced || !timeClient.isTimeSet()) return "---";
   
   time_t rawTime = timeClient.getEpochTime();
@@ -66,21 +66,21 @@ String ntp_get_day() {
   return String(daynames[tmInfo->tm_wday]);
 }
 
-int ntp_get_hour() {
+int NtpGetHour() {
   if (!synced || !timeClient.isTimeSet()) return 0;
   return timeClient.getHours();
 }
 
-int ntp_get_minute() {
+int NtpGetMinute() {
   if (!synced || !timeClient.isTimeSet()) return 0;
   return timeClient.getMinutes();
 }
 
-int ntp_get_second() {
+int NtpGetSecond() {
   if (!synced || !timeClient.isTimeSet()) return 0;
   return timeClient.getSeconds();
 }
 
-bool ntp_is_synced() {
+bool NtpIsSynced() {
   return synced && timeClient.isTimeSet();
 }

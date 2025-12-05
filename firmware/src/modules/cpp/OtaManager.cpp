@@ -11,7 +11,7 @@ void OtaHandle() {
   ArduinoOTA.handle();
 }
 
-bool ota_start(const char* url) {
+bool OtaStart(const char* url) {
   return false;
 }
 
