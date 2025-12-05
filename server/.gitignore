@@ -1,5 +1,25 @@
-.env
-.next
-node_modules/
-data/
+# Deno
+.deno/
 
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Debug
+debug_audio_*.pcm
+
+# Build
+dist/

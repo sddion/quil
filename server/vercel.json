@@ -1,0 +1,19 @@
+{
+    "version": 2,
+    "name": "quil-server",
+    "builds": [
+        {
+            "src": "Main.ts",
+            "use": "@vercel/deno"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "Main.ts"
+        }
+    ],
+    "env": {
+        "OPENAI_API_KEY": "@openai_api_key"
+    }
+}

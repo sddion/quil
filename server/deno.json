@@ -1,0 +1,18 @@
+{
+    "name": "quil-server",
+    "version": "1.0.0",
+    "tasks": {
+        "Dev": "deno run -A --watch --env-file=.env Main.ts",
+        "Start": "deno run -A --env-file=.env Main.ts",
+        "Deploy": "deployctl deploy --project=myquilbot Main.ts"
+    },
+    "imports": {
+        "@std/": "https://deno.land/std@0.224.0/"
+    },
+    "compilerOptions": {
+        "lib": [
+            "deno.window",
+            "deno.ns"
+        ]
+    }
+}

@@ -20,7 +20,7 @@ Quil is an interactive, voice-activated desktop companion robot built on the ESP
 *   **Hardware**:
     *   ESP32 Development Board
     *   SSD1306 OLED Display (128x64)
-    *   TTP223 Touch Sensors (x2)
+    *   TTP223 Touch Sensor
     *   INMP441 I2S Microphone
     *   MAX98357A I2S Speaker
 *   **Software**:
