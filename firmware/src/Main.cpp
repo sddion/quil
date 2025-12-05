@@ -24,6 +24,7 @@
 #include "modes/h/Chat.h"
 #include "modes/h/ThemePreview.h"
 #include "modes/h/WifiInfo.h"
+#include "modes/h/SetupScreen.h"
 
 void setup() {
   Serial.begin(115200);
@@ -85,6 +86,20 @@ void setup() {
   // Clear display after boot animation
   DisplayClear();
   DisplayUpdate();
+  
+  // Show setup screen if in AP mode (first boot)
+  if (WifiIsApMode()) {
+    SetupScreenInit();
+    SetupScreenShow();
+    
+    // Wait for user to configure WiFi and complete setup
+    while (!SetupScreenIsComplete()) {
+      SetupScreenUpdate();
+      HttpHandle();  // Keep HTTP server running for config
+      delay(100);
+    }
+    // Device will restart after setup completes
+  }
   
   TimeInit();
 

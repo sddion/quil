@@ -2,7 +2,7 @@
 #include "hal/h/Display.h"
 
 #include <pgmspace.h>
-#include "../../animations/h/AnimationFrames.h"
+#include "../../anime/h/AnimationFrames.h"
 
 static AnimationType current_anim = ANIM_NONE;
 static uint16_t current_frame = 0;

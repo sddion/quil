@@ -42,3 +42,10 @@
 #define I2S_SPK_BCK 14
 #define I2S_SPK_WS 15
 #define I2S_SPK_DOUT 32
+
+// Firmware version
+#define FIRMWARE_VERSION "1.0.0"
+
+// OTA GitHub configuration
+#define GITHUB_USER "sddion"
+#define GITHUB_REPO "quil"
