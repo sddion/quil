@@ -24,58 +24,19 @@
 #include "modes/h/Chat.h"
 #include "modes/h/ThemePreview.h"
 #include "modes/h/WifiInfo.h"
-#include "modes/h/SetupScreen.h"
+#include "core/h/BootLoader.h"
 
 void setup() {
   Serial.begin(115200);
   delay(100);
   
+  // === PHASE 1: Boot Animation (FIRST!) ===
   I2CInit();
   if (!DisplayInit()) {
     Serial.println("Display fail");
     while(1);
   }
   
-  ConfigInit();
-  DiagInit();
-  StateInit();
-  GestureInit();
-  ActionsInit();
-  
-  // Load and apply display contrast
-  uint8_t contrast = 128;
-  if (ConfigLoadContrast(&contrast)) {
-    DisplaySetContrast(contrast);
-  }
-  
-  // Initialize WiFi and load saved credentials
-  WifiInit();
-  
-  // Check if we have saved WiFi credentials
-  if (WifiHasSavedCredentials()) {
-    Serial.println("[Setup] Found saved WiFi credentials");
-    char ssid[33], pass[65];
-    ConfigLoadWifi(ssid, pass);
-    
-    // Attempt connection - even if it fails, stay in STA mode and keep retrying
-    if (!WifiConnect(ssid, pass)) {
-      Serial.println("[Setup] Initial connection failed, will retry in background");
-      // Don't start AP mode - just keep trying to connect in background
-    }
-  } else {
-    // No saved credentials - start AP mode for initial setup
-    Serial.println("[Setup] No saved credentials - starting AP mode");
-    WifiStartAp();
-  }
-  
-  // Always start HTTP server regardless of WiFi connection status
-  // This allows web interface access once WiFi connects (even if connection was delayed)
-  HttpInit();
-  
-  OtaInit();
-  VoiceInit();
-  WakeInit();
-  BridgeInit();
   AnimInit();
   AnimPlay(ANIM_BOOT);
   while(AnimIsPlaying()) {
@@ -83,31 +44,75 @@ void setup() {
     delay(10);
   }
   
-  // Clear display after boot animation
   DisplayClear();
   DisplayUpdate();
   
-  // Show setup screen if in AP mode (first boot)
-  if (WifiIsApMode()) {
-    SetupScreenInit();
-    SetupScreenShow();
-    
-    // Wait for user to configure WiFi and complete setup
-    while (!SetupScreenIsComplete()) {
-      SetupScreenUpdate();
-      HttpHandle();  // Keep HTTP server running for config
-      delay(100);
-    }
-    // Device will restart after setup completes
+  // Determine if this is first boot (AP mode needed)
+  bool isFirstBoot = false;
+  
+  // === PHASE 2: Loading Sequence with Progress Bar ===
+  BootLoaderInit();
+  
+  // Stage 1: Hardware/Settings
+  BootLoaderShowStage(BOOT_STAGE_HARDWARE, isFirstBoot);
+  ConfigInit();
+  DiagInit();
+  StateInit();
+  GestureInit();
+  ActionsInit();
+  uint8_t contrast = 128;
+  if (ConfigLoadContrast(&contrast)) {
+    DisplaySetContrast(contrast);
   }
   
+  // Check credentials to determine boot type
+  WifiInit();
+  isFirstBoot = !WifiHasSavedCredentials();
+  
+  // Stage 2: WiFi
+  BootLoaderShowStage(BOOT_STAGE_WIFI, isFirstBoot);
+  if (WifiHasSavedCredentials()) {
+    char ssid[33], pass[65];
+    ConfigLoadWifi(ssid, pass);
+    WifiConnect(ssid, pass);
+  } else {
+    WifiStartAp();
+  }
+  HttpInit();
+  
+  // Stage 3: Time
+  BootLoaderShowStage(BOOT_STAGE_TIME, isFirstBoot);
   TimeInit();
-
+  if (WifiIsConnected()) {
+    NtpUpdate();
+  }
+  
+  // Stage 4: Services
+  BootLoaderShowStage(BOOT_STAGE_SERVICES, isFirstBoot);
+  OtaInit();
+  VoiceInit();
+  WakeInit();
+  BridgeInit();
+  
+  // Stage 5: Display
+  BootLoaderShowStage(BOOT_STAGE_DISPLAY, isFirstBoot);
   ChatInit();
   ThemeInit();
   WifiInfoInit();
   
-  // Force initial render to prevent black screen
+  // Stage 6: Update Check
+  BootLoaderShowStage(BOOT_STAGE_UPDATE, isFirstBoot);
+  if (WifiHasInternet()) {
+    // Check for updates in background (don't block)
+    // OtaCheckGithubUpdate();  // Uncomment when ready to auto-update
+  }
+  
+  // Stage 7: Complete
+  BootLoaderShowStage(BOOT_STAGE_COMPLETE, isFirstBoot);
+  delay(500);
+  BootLoaderComplete();
+  
+  // Force initial render to Time mode
   TimeForceRender();
   
   Serial.println("Quil ready");

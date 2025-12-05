@@ -27,8 +27,6 @@ typedef enum {
 } Expression_t;
 
 typedef enum {
-  THEME_MINIMAL,
-  THEME_BOLD,
-  THEME_RETRO,
-  THEME_PLAYBACK
+  THEME_DEFAULT,   // Elaborate theme with date bars
+  THEME_COMPACT    // Simple compact theme
 } DisplayTheme_t;
