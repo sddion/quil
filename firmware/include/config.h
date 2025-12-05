@@ -5,14 +5,20 @@
 #define DISPLAY_HEIGHT 64
 #define DISPLAY_ADDR 0x3C
 
-// I2C pins (ESP32 default)
+// I2C configuration
 #define I2C_SDA 21
 #define I2C_SCL 22
+#define I2C_FREQ 400000
 
-
+// WiFi AP configuration
+#define WIFI_AP_SSID "QUIL SETUP"
+#define WIFI_AP_PASS "quil1234"
+#define WIFI_TIMEOUT_MS 10000
+#define PORTAL_PORT 80
 
 // Diagnostics
 #define HEAP_CHECK_MS 5000
+#define STATE_UPDATE_MS 50
 
 // Config storage
 #define CONFIG_NAMESPACE "quil"
@@ -24,7 +30,8 @@
 
 // NTP configuration
 #define NTP_SERVER "pool.ntp.org"
-#define NTP_OFFSET_SEC 0
+#define NTP_OFFSET_SEC 19800  // IST (India Standard Time) UTC+5:30 = 19800 seconds
+#define NTP_DAYLIGHT_OFFSET_SEC 0  // No daylight saving in India
 #define NTP_UPDATE_MS 3600000  // Update every hour
 
 // Audio I2S pins

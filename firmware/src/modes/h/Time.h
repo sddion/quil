@@ -1,5 +1,5 @@
 #pragma once
-#include "../../include/types.h"
+#include "types.h"
 
 void TimeInit();
 void TimeUpdate();
