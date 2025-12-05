@@ -22,7 +22,6 @@
 #include "modes/h/Time.h"
 
 #include "modes/h/Chat.h"
-#include "modes/h/ThemePreview.h"
 #include "modes/h/WifiInfo.h"
 #include "core/h/BootLoader.h"
 
@@ -97,7 +96,6 @@ void setup() {
   // Stage 5: Display
   BootLoaderShowStage(BOOT_STAGE_DISPLAY, isFirstBoot);
   ChatInit();
-  ThemeInit();
   WifiInfoInit();
   
   // Stage 6: Update Check
@@ -167,10 +165,6 @@ void loop() {
     case MODE_CHAT:
       ChatUpdate();
       ChatRender();
-      break;
-    case MODE_THEME_PREVIEW:
-      ThemeUpdate();
-      ThemeRender();
       break;
     case MODE_WIFI_INFO:
       WifiInfoUpdate();

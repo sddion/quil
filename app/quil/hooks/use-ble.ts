@@ -20,6 +20,7 @@ export interface QuilStatus {
     wifiSsid: string;
     timezone: number;
     brightness: number;
+    theme: number;
     firmwareVersion: string;
 }
 
@@ -30,6 +31,7 @@ export interface QuilConfig {
     weatherApiKey: string;
     weatherLocation: string;
     brightness: number;
+    theme: number;
 }
 
 type ConnectionState = 'disconnected' | 'scanning' | 'connecting' | 'connected';

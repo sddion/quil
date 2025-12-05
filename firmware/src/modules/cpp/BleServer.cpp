@@ -2,6 +2,7 @@
 #include "../h/ConfigStore.h"
 #include "../h/BatteryManager.h"
 #include "../h/WifiManager.h"
+#include "../../modes/h/Time.h"
 #include "hal/h/Display.h"
 #include <BLEDevice.h>
 #include <BLEServer.h>
@@ -73,6 +74,10 @@ class ConfigCallbacks: public BLECharacteristicCallbacks {
         int brEnd = value.indexOf("}", brStart);
         if (brEnd < 0) brEnd = value.indexOf(",", brStart);
         
+        int themeStart = value.indexOf("\"theme\":") + 8;
+        int themeEnd = value.indexOf("}", themeStart);
+        if (themeEnd < 0) themeEnd = value.indexOf(",", themeStart);
+        
         if (ssidStart > 7 && passStart > 11) {
           String ssid = value.substring(ssidStart, ssidEnd);
           String pass = value.substring(passStart, passEnd);
@@ -98,6 +103,12 @@ class ConfigCallbacks: public BLECharacteristicCallbacks {
           ConfigSaveContrast(brightness);
           DisplaySetContrast(brightness);
           Serial.println("[BLE] Brightness saved: " + String(brightness));
+        }
+        
+        if (themeStart > 7 && themeEnd > themeStart) {
+          uint8_t theme = value.substring(themeStart, themeEnd).toInt();
+          TimeSetTheme((DisplayTheme_t)theme);
+          Serial.println("[BLE] Theme saved: " + String(theme));
         }
         
         BleSendStatus(); // Send updated status
@@ -154,12 +165,16 @@ void BleSendStatus() {
   uint8_t brightness = 128;
   ConfigLoadContrast(&brightness);
   
+  uint8_t theme = 0;
+  ConfigLoadTheme(&theme);
+  
   // Build JSON status  
   String status = "{\"battery\":" + String(battery) + 
                   ",\"wifiConnected\":" + (wifiConn ? "true" : "false") +
                   ",\"wifiSsid\":\"" + String(ssid) + "\"" +
                   ",\"timezone\":" + String(tz) +
                   ",\"brightness\":" + String(brightness) +
+                  ",\"theme\":" + String(theme) +
                   ",\"firmwareVersion\":\"1.0.0\"}";
   
   pStatusChar->setValue(status.c_str());

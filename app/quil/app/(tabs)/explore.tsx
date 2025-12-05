@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, ScrollView, TextInput, Pressable, Alert } from 'react-native';
+import { Image } from 'expo-image';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -34,6 +35,7 @@ export default function SettingsScreen() {
   const [weatherApiKey, setWeatherApiKey] = useState('');
   const [weatherLocation, setWeatherLocation] = useState('');
   const [brightness, setBrightness] = useState(128);
+  const [theme, setTheme] = useState(0);
   const [showTimezones, setShowTimezones] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -43,6 +45,7 @@ export default function SettingsScreen() {
       if (quilStatus.wifiSsid) setSsid(quilStatus.wifiSsid);
       setTimezone(quilStatus.timezone);
       setBrightness(quilStatus.brightness);
+      setTheme(quilStatus.theme);
     }
   }, [quilStatus]);
 
@@ -60,6 +63,7 @@ export default function SettingsScreen() {
       weatherApiKey,
       weatherLocation,
       brightness,
+      theme,
     };
 
     const success = await sendConfig(config);
@@ -210,6 +214,30 @@ export default function SettingsScreen() {
               placeholderTextColor={colors.icon}
               editable={isConnected}
             />
+          </View>
+        </View>
+
+        {/* Theme Section */}
+        <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.cardBorder, opacity: isConnected ? 1 : 0.5 }]}>
+          <View style={styles.sectionHeader}>
+            <IconSymbol name="paintbrush.fill" size={22} color={colors.tint} />
+            <ThemedText style={styles.sectionTitle}>Theme</ThemedText>
+          </View>
+          <View style={styles.themeGrid}>
+            <Pressable
+              style={[styles.themeOption, { backgroundColor: colors.inputBackground, borderColor: theme === 0 ? colors.tint : colors.inputBorder }]}
+              onPress={() => isConnected && setTheme(0)}
+            >
+              <Image source={require('@/assets/images/Default.png')} style={styles.themePreview} contentFit="contain" />
+              <ThemedText style={[styles.themeName, theme === 0 && { color: colors.tint }]}>Default</ThemedText>
+            </Pressable>
+            <Pressable
+              style={[styles.themeOption, { backgroundColor: colors.inputBackground, borderColor: theme === 1 ? colors.tint : colors.inputBorder }]}
+              onPress={() => isConnected && setTheme(1)}
+            >
+              <Image source={require('@/assets/images/Compact.png')} style={styles.themePreview} contentFit="contain" />
+              <ThemedText style={[styles.themeName, theme === 1 && { color: colors.tint }]}>Compact</ThemedText>
+            </Pressable>
           </View>
         </View>
 
@@ -437,5 +465,26 @@ const styles = StyleSheet.create({
   dangerButtonText: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  themeGrid: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  themeOption: {
+    flex: 1,
+    borderRadius: 12,
+    borderWidth: 2,
+    padding: 8,
+    alignItems: 'center',
+    gap: 8,
+  },
+  themePreview: {
+    width: '100%',
+    height: 80,
+    borderRadius: 8,
+  },
+  themeName: {
+    fontSize: 14,
+    fontWeight: '500',
   },
 });
