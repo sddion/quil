@@ -10,6 +10,7 @@
 #include "modules/h/WifiManager.h"
 #include "modules/h/NtpClient.h"
 #include "modules/h/OtaManager.h"
+#include "modules/h/BleServer.h"
 #include "modules/h/GestureManager.h"
 #include "modules/h/TouchActions.h"
 #include "modules/h/VoiceManager.h"
@@ -88,6 +89,7 @@ void setup() {
   // Stage 4: Services
   BootLoaderShowStage(BOOT_STAGE_SERVICES, isFirstBoot);
   OtaInit();
+  BleInit();
   VoiceInit();
   WakeInit();
   BridgeInit();
@@ -123,6 +125,7 @@ void loop() {
   StateUpdate();
   DiagUpdate();
   OtaHandle();
+  BleLoop();
   
   TtpUpdate();
   

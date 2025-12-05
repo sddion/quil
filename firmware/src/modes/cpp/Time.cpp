@@ -7,6 +7,7 @@
 #include "modules/h/BatteryManager.h"
 #include "modules/h/StatusIcons.h"
 #include "modules/h/WifiManager.h"
+#include "modules/h/BleServer.h"
 #include <Adafruit_GFX.h>
 
 #include "assets/fonts/Org_01.h"
@@ -63,7 +64,7 @@ void TimeRenderElaborate() {
   uint8_t batteryPct = BatteryGetPercentage();
   int rssi = WifiGetRssi();
   bool wifiConnected = WifiIsConnected();
-  bool btConnected = false; // Placeholder until BT manager exists
+  bool btConnected = BleIsConnected();
   
   uint8_t weatherCode = WEATHER_CLOUD_SUNNY; // Placeholder
   const char* tempStr = "25.6C";
@@ -84,7 +85,7 @@ void TimeRenderCompact() {
   uint8_t batteryPct = BatteryGetPercentage();
   int rssi = WifiGetRssi();
   bool wifiConnected = WifiIsConnected();
-  bool btConnected = false;
+  bool btConnected = BleIsConnected();
   
   uint8_t weatherCode = WEATHER_CLOUD_RAIN; // Placeholder
   const char* tempStr = "25.6c";
