@@ -10,6 +10,8 @@
 #include <Adafruit_GFX.h>
 
 #include "assets/fonts/Org_01.h"
+#include "../../themes/DefaultTheme.h"
+#include "../../themes/CompactTheme.h"
 
 static WeatherManager weatherManager;
 static WeatherData weatherData;
