@@ -1,0 +1,89 @@
+name: Release Firmware + APKs
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  esp32-firmware:
+    name: Build ESP32 Firmware
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install PlatformIO
+        run: pip install platformio
+
+      - name: Build Firmware
+        run: pio run -e esp32
+
+      - name: Keep ONLY firmware.bin
+        run: |
+          mkdir -p fw
+          cp .pio/build/esp32/firmware.bin fw/
+
+      - name: Upload Firmware Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware
+          path: fw/firmware.bin
+
+  android-apk:
+    name: Build Android APKs
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        arch: [arm64-v8a, armeabi-v7a]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Build APK
+        run: ./gradlew assembleRelease -Pabi=${{ matrix.arch }}
+
+      - name: Rename APK
+        run: |
+          TAG=${GITHUB_REF_NAME}     # e.g. v2.3.7
+          CLEAN_TAG=${TAG#v}         # -> 2.3.7
+          mkdir -p output
+          mv app/build/outputs/apk/release/app-release.apk \
+            output/quil-${{ matrix.arch }}-v${CLEAN_TAG}.apk
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-${{ matrix.arch }}
+          path: output/*.apk
+
+  release:
+    name: Publish Release
+    needs: [esp32-firmware, android-apk]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/firmware/firmware.bin
+            artifacts/**/quil-*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

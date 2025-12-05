@@ -1,0 +1,57 @@
+// template
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import React, { useEffect } from "react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { BLEProvider } from "@/hooks/use-ble";
+import { SettingsProvider } from "@/contexts/settings";
+import { DevicesProvider } from "@/contexts/devices";
+import { NotificationsProvider } from "@/contexts/notifications";
+
+SplashScreen.preventAutoHideAsync();
+
+const queryClient = new QueryClient();
+
+function RootLayoutNav() {
+  return (
+    <Stack screenOptions={{ headerBackTitle: "Back" }}>
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="devices" options={{
+        title: "Device Management",
+        presentation: "modal"
+      }} />
+      <Stack.Screen name="onboarding" options={{
+        headerShown: false,
+        presentation: "modal"
+      }} />
+      <Stack.Screen name="help" options={{
+        title: "Help & Support",
+        presentation: "modal"
+      }} />
+      <Stack.Screen name="+not-found" />
+    </Stack>
+  );
+}
+
+export default function RootLayout() {
+  useEffect(() => {
+    SplashScreen.hideAsync();
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <GestureHandlerRootView>
+        <NotificationsProvider>
+          <SettingsProvider>
+            <DevicesProvider>
+              <BLEProvider>
+                <RootLayoutNav />
+              </BLEProvider>
+            </DevicesProvider>
+          </SettingsProvider>
+        </NotificationsProvider>
+      </GestureHandlerRootView>
+    </QueryClientProvider>
+  );
+}
