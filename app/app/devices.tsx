@@ -87,14 +87,6 @@ export default function DevicesScreen() {
       />
       <StatusBar style="light" />
 
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Device Management</Text>
-          <TouchableOpacity onPress={() => router.back()} style={styles.closeButton}>
-            <X size={24} color="#fff" />
-          </TouchableOpacity>
-        </View>
-
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
           {favorites.length > 0 && (
             <View style={styles.section}>
@@ -286,7 +278,6 @@ export default function DevicesScreen() {
             </View>
           )}
         </ScrollView>
-      </SafeAreaView>
     </View>
   );
 }

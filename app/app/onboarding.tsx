@@ -14,7 +14,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   Bluetooth,
   Settings,
-  Zap,
+  RefreshCw,
   CheckCircle,
 } from 'lucide-react-native';
 
@@ -26,7 +26,7 @@ const slides = [
   {
     icon: Bluetooth,
     title: 'Connect via Bluetooth',
-    description: 'Scan and connect to your Quil robot using Bluetooth Low Energy. Works on web browsers with Bluetooth support.',
+    description: 'Scan and connect to your Quil robot using Bluetooth Low Energy.',
     color: '#00bfff',
   },
   {
@@ -36,7 +36,7 @@ const slides = [
     color: '#00ff88',
   },
   {
-    icon: Zap,
+    icon: RefreshCw,
     title: 'Quick Actions',
     description: 'Sync time, update weather, restart device, or check for firmware updates with a single tap.',
     color: '#FFD700',

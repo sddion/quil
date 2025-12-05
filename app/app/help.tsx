@@ -34,15 +34,6 @@ export default function HelpScreen() {
         style={StyleSheet.absoluteFillObject}
       />
       <StatusBar style="light" />
-
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Help & Support</Text>
-          <TouchableOpacity onPress={() => router.back()} style={styles.closeButton}>
-            <X size={24} color="#fff" />
-          </TouchableOpacity>
-        </View>
-
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
@@ -55,12 +46,6 @@ export default function HelpScreen() {
               3. Wait for the connection to establish{'\n'}
               4. Once connected, you&apos;ll see device status and can configure settings
             </Text>
-            <View style={styles.note}>
-              <AlertTriangle size={16} color="#FFD700" />
-              <Text style={styles.noteText}>
-                Web Bluetooth only works in Chrome, Edge, and Opera browsers
-              </Text>
-            </View>
           </View>
 
           <View style={styles.section}>
@@ -109,7 +94,7 @@ export default function HelpScreen() {
               Connection Issues:{'\n'}
               • Ensure Bluetooth is enabled on your device{'\n'}
               • Move closer to your Quil robot{'\n'}
-              • Try refreshing the page{'\n'}
+              • Try restarting the app{'\n'}
               • Restart your Quil device{'\n\n'}
               Configuration Not Saving:{'\n'}
               • Verify you&apos;re connected to the device{'\n'}
@@ -118,35 +103,10 @@ export default function HelpScreen() {
             </Text>
           </View>
 
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <ExternalLink size={20} color="#00bfff" />
-              <Text style={styles.sectionTitle}>Resources</Text>
-            </View>
-            <TouchableOpacity
-              style={styles.link}
-              onPress={() => handleOpenLink('https://github.com/WebBluetoothCG/web-bluetooth')}
-            >
-              <Text style={styles.linkText}>Web Bluetooth API Documentation</Text>
-              <ExternalLink size={16} color="#00bfff" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.link}
-              onPress={() => handleOpenLink('https://openweathermap.org/api')}
-            >
-              <Text style={styles.linkText}>OpenWeatherMap API</Text>
-              <ExternalLink size={16} color="#00bfff" />
-            </TouchableOpacity>
-          </View>
-
           <View style={styles.footer}>
             <Text style={styles.footerText}>Quil Control App v1.0.0</Text>
-            <Text style={styles.footerSubtext}>
-              For additional support, please visit our website
-            </Text>
           </View>
         </ScrollView>
-      </SafeAreaView>
     </View>
   );
 }
