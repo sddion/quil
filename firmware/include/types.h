@@ -2,7 +2,6 @@
 
 typedef enum {
   MODE_TIME_DATE,
-
   MODE_CHAT,
   MODE_WIFI_INFO
 } DisplayMode_t;

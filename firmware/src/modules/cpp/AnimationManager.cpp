@@ -28,11 +28,6 @@ void AnimPlay(AnimationType type) {
       frame_array = thinking_frames;
       total_frames = THINKING_FRAMES;
       break;
-    case ANIM_ANGRY:
-      frame_array = angry_frames;
-      total_frames = ANGRY_FRAMES;
-      break;
-
     case ANIM_BOOT:
       frame_array = boot_frames;
       total_frames = BOOT_FRAMES;

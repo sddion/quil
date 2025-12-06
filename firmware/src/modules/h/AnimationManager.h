@@ -4,8 +4,6 @@
 typedef enum {
   ANIM_NONE,
   ANIM_THINKING,
-  ANIM_ANGRY,
-  ANIM_THUGLIFE,
   ANIM_BOOT
 } AnimationType;
 
