@@ -39,6 +39,8 @@ import type { BLEDevice } from '@/lib/ble-manager';
 import { useSettings } from '@/contexts/settings';
 import { useDevices } from '@/contexts/devices';
 import { useNotifications } from '@/contexts/notifications';
+import { useUpdate } from '@/utils/UpdateContext';
+import { downloadAndInstallUpdate, DownloadProgress } from '@/utils/updater';
 
 const TIMEZONES = [
   'America/New_York',
@@ -74,10 +76,14 @@ export default function HomeScreen() {
   const { settings, updateSettings, markSynced } = useSettings();
   const { saveDevice } = useDevices();
   const { showNotification, currentNotification } = useNotifications();
+  const { updateInfo } = useUpdate();
 
   const [showTimezoneModal, setShowTimezoneModal] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [notificationAnim] = useState(new Animated.Value(-100));
+  const [updateProgress, setUpdateProgress] = useState<DownloadProgress | null>(null);
+  const [updateStatus, setUpdateStatus] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
   const wifiSSID = settings.wifiSSID;
   const wifiPassword = settings.wifiPassword;
@@ -221,6 +227,27 @@ export default function HomeScreen() {
     }
   };
 
+  const handleUpdate = async () => {
+    if (!updateInfo || isUpdating) return;
+    
+    setIsUpdating(true);
+    setUpdateProgress(null);
+    setUpdateStatus('Preparing...');
+    
+    await downloadAndInstallUpdate(
+      updateInfo,
+      (progress) => setUpdateProgress(progress),
+      (status) => setUpdateStatus(status),
+      () => {
+        showNotification('warning', 'Permission Required', 'Please enable install from unknown sources');
+      }
+    );
+    
+    setIsUpdating(false);
+    setUpdateProgress(null);
+    setUpdateStatus(null);
+  };
+
   const isConnected = connectionState === 'connected';
 
   return (
@@ -280,6 +307,35 @@ export default function HomeScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
+          {updateInfo && (
+            <TouchableOpacity
+              style={styles.updateBanner}
+              onPress={handleUpdate}
+              disabled={isUpdating}
+            >
+              <View style={styles.updateBannerContent}>
+                <Download size={20} color="#00ff88" />
+                <View style={styles.updateBannerText}>
+                  <Text style={styles.updateBannerTitle}>
+                    {isUpdating ? (updateStatus || 'Updating...') : `Update Available: ${updateInfo.tag_name}`}
+                  </Text>
+                  {isUpdating && updateProgress ? (
+                    <Text style={styles.updateBannerSubtitle}>
+                      {Math.round(updateProgress.progress * 100)}% downloaded
+                    </Text>
+                  ) : (
+                    <Text style={styles.updateBannerSubtitle}>Tap to download and install</Text>
+                  )}
+                </View>
+                {isUpdating && <ActivityIndicator size="small" color="#00ff88" />}
+              </View>
+              {isUpdating && updateProgress && (
+                <View style={styles.updateProgressBar}>
+                  <View style={[styles.updateProgressFill, { width: `${updateProgress.progress * 100}%` }]} />
+                </View>
+              )}
+            </TouchableOpacity>
+          )}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>CONNECTION</Text>
             <View style={styles.connectionCard}>
@@ -717,6 +773,44 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 24,
+  },
+  updateBanner: {
+    backgroundColor: 'rgba(0,255,136,0.1)',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(0,255,136,0.3)',
+  },
+  updateBannerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  updateBannerText: {
+    flex: 1,
+  },
+  updateBannerTitle: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    color: '#00ff88',
+  },
+  updateBannerSubtitle: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.7)',
+    marginTop: 2,
+  },
+  updateProgressBar: {
+    height: 4,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 2,
+    marginTop: 12,
+    overflow: 'hidden',
+  },
+  updateProgressFill: {
+    height: '100%',
+    backgroundColor: '#00ff88',
+    borderRadius: 2,
   },
   section: {
     marginBottom: 24,

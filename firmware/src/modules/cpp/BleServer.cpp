@@ -33,7 +33,7 @@ class ServerCallbacks: public BLEServerCallbacks {
 
 class ConfigCallbacks: public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic* pCharacteristic) {
-    String value = pCharacteristic->getValue();
+    String value = String(pCharacteristic->getValue().c_str());
     if (value.length() > 0) {
       Serial.println("[BLE] Received config:");
       Serial.println(value);
@@ -153,7 +153,7 @@ void BleInit() {
 void BleSendStatus() {
   if (!pStatusChar) return;
   
-  uint8_t battery = BatteryGetPercent();
+  uint8_t battery = BatteryGetPercentage();
   bool wifiConn = WifiIsConnected();
   char ssid[33] = "";
   char pass[65] = "";

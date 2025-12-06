@@ -8,6 +8,7 @@ import { BLEProvider } from "@/hooks/use-ble";
 import { SettingsProvider } from "@/contexts/settings";
 import { DevicesProvider } from "@/contexts/devices";
 import { NotificationsProvider } from "@/contexts/notifications";
+import { UpdateProvider } from "@/utils/UpdateContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -42,15 +43,17 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView>
-        <NotificationsProvider>
-          <SettingsProvider>
-            <DevicesProvider>
-              <BLEProvider>
-                <RootLayoutNav />
-              </BLEProvider>
-            </DevicesProvider>
-          </SettingsProvider>
-        </NotificationsProvider>
+        <UpdateProvider>
+          <NotificationsProvider>
+            <SettingsProvider>
+              <DevicesProvider>
+                <BLEProvider>
+                  <RootLayoutNav />
+                </BLEProvider>
+              </DevicesProvider>
+            </SettingsProvider>
+          </NotificationsProvider>
+        </UpdateProvider>
       </GestureHandlerRootView>
     </QueryClientProvider>
   );
