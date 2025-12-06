@@ -33,7 +33,8 @@ import { useNotifications } from '@/contexts/notifications';
 import { useUpdate } from '@/utils/UpdateContext';
 import { downloadAndInstallUpdate, DownloadProgress } from '@/utils/updater';
 import { VOICE_OPTIONS, LANGUAGE_OPTIONS } from '@/constants/voice';
-import { Mic, Globe } from 'lucide-react-native';
+import { TIMEZONE_DATA, TIMEZONE_REGIONS, POPULAR_TIMEZONES, getTimezoneLabel } from '@/constants/timezone';
+import { Mic, Globe, Clock } from 'lucide-react-native';
 import { homeStyles as styles } from '@/styles/index';
 import {
   Connection,
@@ -41,17 +42,6 @@ import {
   QuickActions,
 } from '@/components/home';
 
-const TIMEZONES = [
-  'America/New_York',
-  'America/Chicago',
-  'America/Denver',
-  'America/Los_Angeles',
-  'Europe/London',
-  'Europe/Paris',
-  'Asia/Tokyo',
-  'Asia/Shanghai',
-  'Australia/Sydney',
-];
 
 const ONBOARDING_KEY = '@quil_onboarding_completed';
 
@@ -392,32 +382,65 @@ export default function HomeScreen() {
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>TIMEZONE</Text>
                 <View style={styles.formCard}>
-                  <TouchableOpacity
-                    style={[styles.pickerButton, !isConnected && styles.disabledInput]}
-                    onPress={() => isConnected && setShowTimezoneModal(!showTimezoneModal)}
-                    disabled={!isConnected}
-                  >
-                    <Text style={styles.pickerButtonText}>{timezone}</Text>
-                  </TouchableOpacity>
-                  {showTimezoneModal && (
-                    <View style={styles.pickerOptions}>
-                      {TIMEZONES.map((tz) => (
-                        <TouchableOpacity
-                          key={tz}
-                          style={styles.pickerOption}
-                          onPress={() => {
-                            setTimezone(tz);
-                            setShowTimezoneModal(false);
-                          }}
-                        >
-                          <Text style={styles.pickerOptionText}>{tz}</Text>
-                          {tz === timezone && (
-                            <View style={styles.pickerOptionSelected} />
-                          )}
-                        </TouchableOpacity>
-                      ))}
+                  <View style={styles.inputGroup}>
+                    <View style={styles.inputLabelRow}>
+                      <Clock size={16} color="#00bfff" />
+                      <Text style={styles.inputLabel}>Timezone</Text>
                     </View>
-                  )}
+                    <TouchableOpacity
+                      style={[styles.pickerButton, !isConnected && styles.disabledInput]}
+                      onPress={() => isConnected && setShowTimezoneModal(!showTimezoneModal)}
+                      disabled={!isConnected}
+                    >
+                      <Text style={styles.pickerButtonText}>{getTimezoneLabel(timezone)}</Text>
+                    </TouchableOpacity>
+                    {showTimezoneModal && (
+                      <ScrollView style={styles.pickerOptionsScroll} nestedScrollEnabled>
+                        <Text style={styles.pickerSectionHeader}>Popular Timezones</Text>
+                        {POPULAR_TIMEZONES.map((tz) => (
+                          <TouchableOpacity
+                            key={tz.value}
+                            style={styles.pickerOption}
+                            onPress={() => {
+                              setTimezone(tz.value);
+                              setShowTimezoneModal(false);
+                            }}
+                          >
+                            <View>
+                              <Text style={styles.pickerOptionText}>{tz.label}</Text>
+                              <Text style={styles.pickerOptionSubtext}>{tz.value} • {tz.offsetStr}</Text>
+                            </View>
+                            {tz.value === timezone && (
+                              <View style={styles.pickerOptionSelected} />
+                            )}
+                          </TouchableOpacity>
+                        ))}
+                        {TIMEZONE_REGIONS.filter(r => !['Other', 'Etc'].includes(r)).map((region) => (
+                          <View key={region}>
+                            <Text style={styles.pickerSectionHeader}>{region}</Text>
+                            {TIMEZONE_DATA.regions[region].map((tz) => (
+                              <TouchableOpacity
+                                key={tz.value}
+                                style={styles.pickerOption}
+                                onPress={() => {
+                                  setTimezone(tz.value);
+                                  setShowTimezoneModal(false);
+                                }}
+                              >
+                                <View>
+                                  <Text style={styles.pickerOptionText}>{tz.label}</Text>
+                                  <Text style={styles.pickerOptionSubtext}>{tz.value} • {tz.offsetStr}</Text>
+                                </View>
+                                {tz.value === timezone && (
+                                  <View style={styles.pickerOptionSelected} />
+                                )}
+                              </TouchableOpacity>
+                            ))}
+                          </View>
+                        ))}
+                      </ScrollView>
+                    )}
+                  </View>
                 </View>
               </View>
 

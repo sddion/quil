@@ -321,8 +321,22 @@ export const homeStyles = StyleSheet.create({
     marginTop: 2,
   },
   pickerOptionsScroll: {
-    maxHeight: 200,
+    maxHeight: 400,
     marginTop: 8,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  pickerSectionHeader: {
+    fontSize: 12,
+    fontWeight: '700' as const,
+    color: '#00bfff',
+    letterSpacing: 1,
+    paddingHorizontal: 12,
+    paddingTop: 12,
+    paddingBottom: 6,
+    backgroundColor: 'rgba(0,191,255,0.1)',
   },
   sliderContainer: {
     gap: 12,
