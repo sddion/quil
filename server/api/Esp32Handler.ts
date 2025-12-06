@@ -5,18 +5,21 @@
 
 import { RealtimeClient, type IRealtimeEvent } from "../lib/OpenAI/RealtimeClient.ts";
 import { EncodeBase64, DecodeBase64, ChunkAudioData } from "../lib/audio/AudioUtils.ts";
-import { QuilPersona, QuilVoice, VadConfig, IsDevMode } from "../lib/Config.ts";
+import { GetQuilPersona, DefaultVoice, DefaultLanguage, VoiceOptions, VadConfig, IsDevMode } from "../lib/Config.ts";
 
 export interface IEsp32Session {
     Ws: WebSocket;
     OpenAiClient: RealtimeClient;
     CurrentItemId: string | null;
     IsActive: boolean;
+    Voice: string;
+    Language: string;
+    IsConfigured: boolean;
 }
 
 const ActiveSessions: Map<string, IEsp32Session> = new Map();
 
-export async function HandleEsp32Connection(Ws: WebSocket, SessionId: string): Promise<void> {
+export function HandleEsp32Connection(Ws: WebSocket, SessionId: string): void {
     console.log(`[ESP32] New connection: ${SessionId}`);
 
     const OpenAiClient = new RealtimeClient();
@@ -25,6 +28,9 @@ export async function HandleEsp32Connection(Ws: WebSocket, SessionId: string): P
         OpenAiClient: OpenAiClient,
         CurrentItemId: null,
         IsActive: true,
+        Voice: DefaultVoice,
+        Language: DefaultLanguage,
+        IsConfigured: false,
     };
 
     ActiveSessions.set(SessionId, Session);
@@ -35,12 +41,27 @@ export async function HandleEsp32Connection(Ws: WebSocket, SessionId: string): P
     // Setup ESP32 WebSocket handlers
     SetupEsp32Handlers(Session, SessionId);
 
-    // Connect to OpenAI
+    // Send ready message - wait for config before connecting to OpenAI
+    SendToEsp32(Ws, { 
+        type: "ready", 
+        message: "Send config to start session",
+        defaultVoice: DefaultVoice,
+        defaultLanguage: DefaultLanguage,
+        voices: VoiceOptions,
+    });
+}
+
+async function ConnectToOpenAI(Session: IEsp32Session, SessionId: string): Promise<void> {
+    const { Ws, OpenAiClient, Voice, Language } = Session;
+    
+    // Validate voice
+    const validVoice = VoiceOptions.find(v => v.Id === Voice)?.Id ?? DefaultVoice;
+    
     try {
         await OpenAiClient.Connect({
             Model: "gpt-4o-mini-realtime-preview-2024-12-17",
-            Voice: QuilVoice,
-            Instructions: QuilPersona,
+            Voice: validVoice,
+            Instructions: GetQuilPersona(Language),
             InputAudioTranscription: { Model: "whisper-1" },
             TurnDetection: {
                 Type: "server_vad",
@@ -49,10 +70,11 @@ export async function HandleEsp32Connection(Ws: WebSocket, SessionId: string): P
                 SilenceDurationMs: VadConfig.SilenceDurationMs,
             },
         });
-        console.log(`[ESP32] Session ${SessionId} connected to OpenAI`);
+        console.log(`[ESP32] Session ${SessionId} connected to OpenAI (voice: ${validVoice}, lang: ${Language})`);
 
         // Send auth confirmation to ESP32
-        SendToEsp32(Ws, { type: "auth", status: "connected" });
+        SendToEsp32(Ws, { type: "auth", status: "connected", voice: validVoice, language: Language });
+        Session.IsConfigured = true;
     } catch (Error) {
         console.error(`[ESP32] Failed to connect to OpenAI:`, Error);
         SendToEsp32(Ws, { type: "error", message: "Failed to connect to AI" });
@@ -149,7 +171,7 @@ function SetupEsp32Handlers(Session: IEsp32Session, SessionId: string): void {
         // Text data = control messages from ESP32
         try {
             const Message = JSON.parse(Event.data as string);
-            HandleEsp32Message(Session, Message);
+            HandleEsp32Message(Session, Message, SessionId);
         } catch {
             console.error(`[ESP32] Invalid message from ${SessionId}:`, Event.data);
         }
@@ -165,11 +187,27 @@ function SetupEsp32Handlers(Session: IEsp32Session, SessionId: string): void {
     };
 }
 
-function HandleEsp32Message(Session: IEsp32Session, Message: Record<string, unknown>): void {
+function HandleEsp32Message(Session: IEsp32Session, Message: Record<string, unknown>, SessionId: string): void {
     const { OpenAiClient } = Session;
     const MsgType = Message.type as string;
     const Msg = Message.msg as string;
 
+    // Handle config message - sets voice/language and connects to OpenAI
+    if (MsgType === "config") {
+        const voice = (Message.voice as string) ?? DefaultVoice;
+        const language = (Message.language as string) ?? DefaultLanguage;
+        
+        Session.Voice = voice;
+        Session.Language = language;
+        
+        if (!Session.IsConfigured) {
+            console.log(`[ESP32] Session ${SessionId} config: voice=${voice}, language=${language}`);
+            ConnectToOpenAI(Session, SessionId);
+        }
+        return;
+    }
+
+    // Handle instruction messages
     if (MsgType === "instruction") {
         switch (Msg) {
             case "end_of_speech":

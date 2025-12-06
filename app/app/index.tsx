@@ -17,15 +17,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
-  Bluetooth,
-  BluetoothConnected,
-  BluetoothSearching,
-  Battery,
-  Wifi,
-  PackageCheck,
-  Clock,
-  CloudSun,
-  RotateCcw,
   Download,
   Sun,
   MapPin,
@@ -41,6 +32,14 @@ import { useDevices } from '@/contexts/devices';
 import { useNotifications } from '@/contexts/notifications';
 import { useUpdate } from '@/utils/UpdateContext';
 import { downloadAndInstallUpdate, DownloadProgress } from '@/utils/updater';
+import { VOICE_OPTIONS, LANGUAGE_OPTIONS } from '@/constants/voice';
+import { Mic, Globe } from 'lucide-react-native';
+import { homeStyles as styles } from '@/styles/index';
+import {
+  Connection,
+  DeviceStatus,
+  QuickActions,
+} from '@/components/home';
 
 const TIMEZONES = [
   'America/New_York',
@@ -79,6 +78,8 @@ export default function HomeScreen() {
   const { updateInfo } = useUpdate();
 
   const [showTimezoneModal, setShowTimezoneModal] = useState<boolean>(false);
+  const [showVoiceModal, setShowVoiceModal] = useState<boolean>(false);
+  const [showLanguageModal, setShowLanguageModal] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [notificationAnim] = useState(new Animated.Value(-100));
   const [updateProgress, setUpdateProgress] = useState<DownloadProgress | null>(null);
@@ -92,6 +93,8 @@ export default function HomeScreen() {
   const weatherLocation = settings.weatherLocation;
   const brightness = settings.brightness;
   const selectedTheme = settings.selectedTheme;
+  const voiceId = settings.voiceId;
+  const language = settings.language;
 
   const setWifiSSID = (value: string) => updateSettings({ wifiSSID: value });
   const setWifiPassword = (value: string) => updateSettings({ wifiPassword: value });
@@ -100,6 +103,8 @@ export default function HomeScreen() {
   const setWeatherLocation = (value: string) => updateSettings({ weatherLocation: value });
   const setBrightness = (value: number) => updateSettings({ brightness: value });
   const setSelectedTheme = (value: string) => updateSettings({ selectedTheme: value });
+  const setVoiceId = (value: string) => updateSettings({ voiceId: value });
+  const setLanguage = (value: string) => updateSettings({ language: value });
 
   useEffect(() => {
     checkOnboarding();
@@ -336,137 +341,24 @@ export default function HomeScreen() {
               )}
             </TouchableOpacity>
           )}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>CONNECTION</Text>
-            <View style={styles.connectionCard}>
-              <View style={styles.connectionHeader}>
-                {connectionState === 'connected' && (
-                  <BluetoothConnected size={24} color="#00ff88" />
-                )}
-                {connectionState === 'connecting' && (
-                  <ActivityIndicator size="small" color="#00bfff" />
-                )}
-                {connectionState === 'scanning' && (
-                  <BluetoothSearching size={24} color="#00bfff" />
-                )}
-                {connectionState === 'disconnected' && (
-                  <Bluetooth size={24} color="#666" />
-                )}
-                <View style={styles.connectionInfo}>
-                  <Text style={styles.connectionStatus}>
-                    {connectionState === 'connected' && 'Connected'}
-                    {connectionState === 'connecting' && 'Connecting...'}
-                    {connectionState === 'scanning' && 'Scanning...'}
-                    {connectionState === 'disconnected' && 'Disconnected'}
-                  </Text>
-                  {connectedDevice && (
-                    <Text style={styles.deviceName}>{connectedDevice.name}</Text>
-                  )}
-                </View>
-                {isConnected && (
-                  <TouchableOpacity
-                    style={styles.disconnectButton}
-                    onPress={handleDisconnect}
-                  >
-                    <Text style={styles.disconnectButtonText}>Disconnect</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-
-              {error && (
-                <View style={styles.errorBanner}>
-                  <AlertTriangle size={16} color="#ff4444" />
-                  <Text style={styles.errorText}>{error}</Text>
-                </View>
-              )}
-
-              {!isConnected && connectionState !== 'scanning' && devices.length === 0 && (
-                <TouchableOpacity
-                  style={styles.scanButton}
-                  onPress={startScan}
-                >
-                  <BluetoothSearching size={20} color="#00bfff" />
-                  <Text style={styles.scanButtonText}>Scan for Devices</Text>
-                </TouchableOpacity>
-              )}
-
-              {!isConnected && devices.length > 0 && (
-                <View style={styles.deviceList}>
-                  <Text style={styles.deviceListTitle}>Available Devices</Text>
-                  {devices.map((device) => (
-                    <TouchableOpacity
-                      key={device.id}
-                      style={styles.deviceItem}
-                      onPress={() => handleConnect(device)}
-                    >
-                      <View style={styles.deviceItemContent}>
-                        <Text style={styles.deviceItemName}>{device.name}</Text>
-                        <Text style={styles.deviceItemId}>{device.id}</Text>
-                      </View>
-                      <Text style={styles.deviceItemRSSI}>{device.rssi} dBm</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-            </View>
-          </View>
+          <Connection
+            connectionState={connectionState}
+            connectedDevice={connectedDevice}
+            devices={devices}
+            error={error}
+            retryCount={retryCount}
+            maxRetries={maxRetries}
+            connectionHealth={connectionHealth}
+            isConnected={isConnected}
+            onConnect={handleConnect}
+            onDisconnect={handleDisconnect}
+            onStartScan={startScan}
+          />
 
           {isConnected && deviceStatus && (
             <>
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>DEVICE STATUS</Text>
-                <View style={styles.statusCard}>
-                  <View style={styles.statusRow}>
-                    <Battery size={20} color="#00ff88" />
-                    <Text style={styles.statusLabel}>Battery</Text>
-                    <Text style={styles.statusValue}>{deviceStatus.battery}%</Text>
-                  </View>
-                  <View style={styles.statusRow}>
-                    <Wifi size={20} color="#00bfff" />
-                    <Text style={styles.statusLabel}>WiFi</Text>
-                    <Text style={styles.statusValue}>{deviceStatus.wifiSSID}</Text>
-                  </View>
-                  <View style={styles.statusRow}>
-                    <PackageCheck size={20} color="#ff6b6b" />
-                    <Text style={styles.statusLabel}>Firmware</Text>
-                    <Text style={styles.statusValue}>{deviceStatus.firmwareVersion}</Text>
-                  </View>
-                </View>
-              </View>
-
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>QUICK ACTIONS</Text>
-                <View style={styles.actionsGrid}>
-                  <TouchableOpacity
-                    style={styles.actionButton}
-                    onPress={() => handleQuickAction('Sync Time')}
-                  >
-                    <Clock size={24} color="#00bfff" />
-                    <Text style={styles.actionButtonText}>Sync Time</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.actionButton}
-                    onPress={() => handleQuickAction('Update Weather')}
-                  >
-                    <CloudSun size={24} color="#00bfff" />
-                    <Text style={styles.actionButtonText}>Update Weather</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.actionButton}
-                    onPress={() => handleQuickAction('Restart')}
-                  >
-                    <RotateCcw size={24} color="#00bfff" />
-                    <Text style={styles.actionButtonText}>Restart</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.actionButton}
-                    onPress={() => handleQuickAction('Check Updates')}
-                  >
-                    <Download size={24} color="#00bfff" />
-                    <Text style={styles.actionButtonText}>Check Updates</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
+              <DeviceStatus deviceStatus={deviceStatus} />
+              <QuickActions onQuickAction={handleQuickAction} />
 
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>WIFI CONFIGURATION</Text>
@@ -526,6 +418,86 @@ export default function HomeScreen() {
                       ))}
                     </View>
                   )}
+                </View>
+              </View>
+
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>VOICE SETTINGS</Text>
+                <View style={styles.formCard}>
+                  <View style={styles.inputGroup}>
+                    <View style={styles.inputLabelRow}>
+                      <Mic size={16} color="#00bfff" />
+                      <Text style={styles.inputLabel}>Voice</Text>
+                    </View>
+                    <TouchableOpacity
+                      style={[styles.pickerButton, !isConnected && styles.disabledInput]}
+                      onPress={() => isConnected && setShowVoiceModal(!showVoiceModal)}
+                      disabled={!isConnected}
+                    >
+                      <Text style={styles.pickerButtonText}>
+                        {VOICE_OPTIONS.find(v => v.id === voiceId)?.name ?? 'Shimmer'} - {VOICE_OPTIONS.find(v => v.id === voiceId)?.description}
+                      </Text>
+                    </TouchableOpacity>
+                    {showVoiceModal && (
+                      <View style={styles.pickerOptions}>
+                        {VOICE_OPTIONS.map((voice) => (
+                          <TouchableOpacity
+                            key={voice.id}
+                            style={styles.pickerOption}
+                            onPress={() => {
+                              setVoiceId(voice.id);
+                              setShowVoiceModal(false);
+                            }}
+                          >
+                            <View>
+                              <Text style={styles.pickerOptionText}>{voice.name}</Text>
+                              <Text style={styles.pickerOptionSubtext}>{voice.gender} • {voice.description}</Text>
+                            </View>
+                            {voice.id === voiceId && (
+                              <View style={styles.pickerOptionSelected} />
+                            )}
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    )}
+                  </View>
+                  <View style={styles.inputGroup}>
+                    <View style={styles.inputLabelRow}>
+                      <Globe size={16} color="#00bfff" />
+                      <Text style={styles.inputLabel}>Language</Text>
+                    </View>
+                    <TouchableOpacity
+                      style={[styles.pickerButton, !isConnected && styles.disabledInput]}
+                      onPress={() => isConnected && setShowLanguageModal(!showLanguageModal)}
+                      disabled={!isConnected}
+                    >
+                      <Text style={styles.pickerButtonText}>
+                        {LANGUAGE_OPTIONS.find(l => l.code === language)?.name ?? 'English'}
+                        {LANGUAGE_OPTIONS.find(l => l.code === language)?.region ? ` (${LANGUAGE_OPTIONS.find(l => l.code === language)?.region})` : ''}
+                      </Text>
+                    </TouchableOpacity>
+                    {showLanguageModal && (
+                      <ScrollView style={styles.pickerOptionsScroll} nestedScrollEnabled>
+                        {LANGUAGE_OPTIONS.map((lang) => (
+                          <TouchableOpacity
+                            key={lang.code}
+                            style={styles.pickerOption}
+                            onPress={() => {
+                              setLanguage(lang.code);
+                              setShowLanguageModal(false);
+                            }}
+                          >
+                            <Text style={styles.pickerOptionText}>
+                              {lang.name}{lang.region ? ` (${lang.region})` : ''}
+                            </Text>
+                            {lang.code === language && (
+                              <View style={styles.pickerOptionSelected} />
+                            )}
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    )}
+                  </View>
                 </View>
               </View>
 
@@ -736,522 +708,3 @@ export default function HomeScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0a0e27',
-  },
-  safeArea: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
-  },
-  logo: {
-    fontSize: 32,
-    fontWeight: '700' as const,
-    color: '#00ff88',
-    letterSpacing: 4,
-  },
-  subtitle: {
-    fontSize: 11,
-    fontWeight: '600' as const,
-    color: '#00bfff',
-    letterSpacing: 2,
-    marginTop: 2,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 24,
-  },
-  updateBanner: {
-    backgroundColor: 'rgba(0,255,136,0.1)',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(0,255,136,0.3)',
-  },
-  updateBannerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  updateBannerText: {
-    flex: 1,
-  },
-  updateBannerTitle: {
-    fontSize: 14,
-    fontWeight: '600' as const,
-    color: '#00ff88',
-  },
-  updateBannerSubtitle: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.7)',
-    marginTop: 2,
-  },
-  updateProgressBar: {
-    height: 4,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 2,
-    marginTop: 12,
-    overflow: 'hidden',
-  },
-  updateProgressFill: {
-    height: '100%',
-    backgroundColor: '#00ff88',
-    borderRadius: 2,
-  },
-  section: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 11,
-    fontWeight: '700' as const,
-    color: '#00bfff',
-    letterSpacing: 1.5,
-    marginBottom: 12,
-  },
-  connectionCard: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-  },
-  connectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  connectionInfo: {
-    flex: 1,
-  },
-  connectionStatus: {
-    fontSize: 16,
-    fontWeight: '600' as const,
-    color: '#fff',
-  },
-  deviceName: {
-    fontSize: 13,
-    color: '#999',
-    marginTop: 2,
-    fontFamily: 'monospace',
-  },
-  disconnectButton: {
-    backgroundColor: 'rgba(255,68,68,0.2)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#ff4444',
-  },
-  disconnectButtonText: {
-    color: '#ff4444',
-    fontSize: 12,
-    fontWeight: '600' as const,
-  },
-  errorBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 12,
-    padding: 12,
-    backgroundColor: 'rgba(255,68,68,0.1)',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255,68,68,0.3)',
-  },
-  errorText: {
-    flex: 1,
-    color: '#ff4444',
-    fontSize: 13,
-  },
-  deviceList: {
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.1)',
-  },
-  deviceListTitle: {
-    fontSize: 13,
-    fontWeight: '600' as const,
-    color: '#999',
-    marginBottom: 8,
-  },
-  deviceItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 12,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 8,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(0,191,255,0.3)',
-  },
-  deviceItemContent: {
-    flex: 1,
-  },
-  deviceItemName: {
-    fontSize: 15,
-    fontWeight: '600' as const,
-    color: '#fff',
-  },
-  deviceItemId: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 2,
-    fontFamily: 'monospace',
-  },
-  deviceItemRSSI: {
-    fontSize: 12,
-    color: '#00bfff',
-    fontFamily: 'monospace',
-  },
-  statusCard: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    gap: 12,
-  },
-  statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  statusLabel: {
-    flex: 1,
-    fontSize: 14,
-    color: '#999',
-  },
-  statusValue: {
-    fontSize: 14,
-    fontWeight: '600' as const,
-    color: '#fff',
-    fontFamily: 'monospace',
-  },
-  actionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  actionButton: {
-    flex: 1,
-    minWidth: '45%',
-    backgroundColor: 'rgba(0,191,255,0.1)',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    gap: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(0,191,255,0.3)',
-  },
-  actionButtonText: {
-    color: '#00bfff',
-    fontSize: 13,
-    fontWeight: '600' as const,
-  },
-  formCard: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    gap: 16,
-  },
-  inputGroup: {
-    gap: 8,
-  },
-  inputLabel: {
-    fontSize: 13,
-    fontWeight: '600' as const,
-    color: '#999',
-    marginLeft: 4,
-  },
-  inputLabelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  input: {
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 8,
-    padding: 12,
-    color: '#fff',
-    fontSize: 14,
-    fontFamily: 'monospace',
-  },
-  disabledInput: {
-    opacity: 0.5,
-  },
-  pickerButton: {
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 8,
-    padding: 12,
-  },
-  pickerButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontFamily: 'monospace',
-  },
-  pickerOptions: {
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    borderRadius: 8,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-  },
-  pickerOption: {
-    padding: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
-  },
-  pickerOptionText: {
-    color: '#fff',
-    fontSize: 13,
-    fontFamily: 'monospace',
-  },
-  pickerOptionSelected: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#00ff88',
-  },
-  sliderContainer: {
-    gap: 12,
-  },
-  sliderHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  sliderValue: {
-    marginLeft: 'auto',
-    fontSize: 16,
-    fontWeight: '700' as const,
-    color: '#00bfff',
-    fontFamily: 'monospace',
-  },
-  sliderTrack: {
-    height: 8,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  sliderFill: {
-    height: '100%',
-    backgroundColor: '#00bfff',
-  },
-  sliderButtons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  sliderButton: {
-    flex: 1,
-    backgroundColor: 'rgba(0,191,255,0.2)',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(0,191,255,0.3)',
-  },
-  sliderButtonText: {
-    color: '#00bfff',
-    fontSize: 20,
-    fontWeight: '700' as const,
-  },
-  themeScrollContent: {
-    gap: 12,
-    paddingRight: 24,
-  },
-  themeCard: {
-    width: 140,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.1)',
-    alignItems: 'center',
-    gap: 12,
-  },
-  themeCardSelected: {
-    borderColor: '#00ff88',
-    backgroundColor: 'rgba(0,255,136,0.1)',
-  },
-  themePreview: {
-    width: '100%',
-    height: 80,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    borderRadius: 8,
-    overflow: 'hidden',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  themePreviewImage: {
-    width: '100%',
-    height: '100%',
-  },
-  themePreviewModern: {
-    width: '100%',
-    height: '100%',
-    padding: 8,
-    gap: 6,
-  },
-  modernBlock1: {
-    flex: 1,
-    backgroundColor: 'rgba(0,191,255,0.4)',
-    borderRadius: 4,
-  },
-  modernBlock2: {
-    flex: 1,
-    backgroundColor: 'rgba(0,255,136,0.4)',
-    borderRadius: 4,
-  },
-  themePreviewMinimal: {
-    width: '100%',
-    height: '100%',
-    padding: 12,
-    justifyContent: 'center',
-    gap: 8,
-  },
-  minimalLine: {
-    height: 3,
-    backgroundColor: 'rgba(255,255,255,0.6)',
-    borderRadius: 2,
-  },
-  themePreviewRetro: {
-    width: '100%',
-    height: '100%',
-    padding: 4,
-  },
-  retroGrid: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(0,255,136,0.2)',
-    borderWidth: 2,
-    borderColor: 'rgba(0,255,136,0.6)',
-    borderRadius: 2,
-  },
-  themeCardTitle: {
-    fontSize: 14,
-    fontWeight: '700' as const,
-    color: '#fff',
-  },
-  themeCardDesc: {
-    fontSize: 11,
-    color: '#999',
-  },
-  dangerCard: {
-    backgroundColor: 'rgba(255,68,68,0.05)',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255,68,68,0.3)',
-    gap: 12,
-  },
-  dangerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: 'rgba(255,68,68,0.2)',
-    padding: 14,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ff4444',
-  },
-  dangerButtonText: {
-    color: '#ff4444',
-    fontSize: 14,
-    fontWeight: '700' as const,
-  },
-  dangerWarning: {
-    fontSize: 12,
-    color: '#ff6b6b',
-    textAlign: 'center',
-  },
-  saveButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: '#00ff88',
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 8,
-  },
-  saveButtonText: {
-    color: '#0a0e27',
-    fontSize: 16,
-    fontWeight: '700' as const,
-    letterSpacing: 1,
-  },
-  disabledButton: {
-    opacity: 0.5,
-  },
-  scanButton: {
-    marginTop: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: 'rgba(0,191,255,0.1)',
-    padding: 14,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(0,191,255,0.3)',
-  },
-  scanButtonText: {
-    color: '#00bfff',
-    fontSize: 14,
-    fontWeight: '600' as const,
-  },
-  bottomSpacer: {
-    height: 40,
-  },
-  notificationBar: {
-    position: 'absolute' as const,
-    top: 0,
-    left: 0,
-    right: 0,
-    padding: 16,
-    zIndex: 1000,
-  },
-  notificationTitle: {
-    fontSize: 14,
-    fontWeight: '700' as const,
-    color: '#0a0e27',
-    marginBottom: 4,
-  },
-  notificationMessage: {
-    fontSize: 13,
-    color: '#0a0e27',
-  },
-  headerActions: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  headerButton: {
-    padding: 8,
-  },
-});

@@ -10,6 +10,8 @@ export type AppSettings = {
   weatherLocation: string;
   brightness: number;
   selectedTheme: string;
+  voiceId: string;
+  language: string;
   lastSyncedAt: number | null;
 };
 
@@ -23,6 +25,8 @@ const defaultSettings: AppSettings = {
   weatherLocation: '',
   brightness: 128,
   selectedTheme: 'default',
+  voiceId: 'shimmer',
+  language: 'en',
   lastSyncedAt: null,
 };
 
