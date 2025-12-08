@@ -23,7 +23,11 @@
 
 #include "modes/h/Chat.h"
 #include "modes/h/WifiInfo.h"
+#include "modes/h/SetupScreen.h"
 #include "core/h/BootLoader.h"
+
+// Global flag for first boot mode
+static bool g_isFirstBoot = false;
 
 void setup() {
   Serial.begin(115200);
@@ -46,14 +50,11 @@ void setup() {
   DisplayClear();
   DisplayUpdate();
   
-  // Determine if this is first boot (AP mode needed)
-  bool isFirstBoot = false;
-  
   // === PHASE 2: Loading Sequence with Progress Bar ===
   BootLoaderInit();
   
   // Stage 1: Hardware/Settings
-  BootLoaderShowStage(BOOT_STAGE_HARDWARE, isFirstBoot);
+  BootLoaderShowStage(BOOT_STAGE_HARDWARE, false);
   ConfigInit();
   DiagInit();
   StateInit();
@@ -66,27 +67,44 @@ void setup() {
   
   // Check credentials to determine boot type
   WifiInit();
-  isFirstBoot = !WifiHasSavedCredentials();
+  g_isFirstBoot = !WifiHasSavedCredentials();
   
-  // Stage 2: WiFi
-  BootLoaderShowStage(BOOT_STAGE_WIFI, isFirstBoot);
-  if (WifiHasSavedCredentials()) {
-    char ssid[33], pass[65];
-    ConfigLoadWifi(ssid, pass);
-    WifiConnect(ssid, pass);
-  } else {
+  if (g_isFirstBoot) {
+    // === FIRST BOOT: Start AP and BLE, then wait for configuration ===
+    Serial.println("[Boot] First boot - entering setup mode");
+    
+    BootLoaderShowStage(BOOT_STAGE_WIFI, true);
     WifiStartAp();
+    
+    BootLoaderShowStage(BOOT_STAGE_SERVICES, true);
+    BleInit();
+    
+    // Initialize SetupScreen and start waiting
+    SetupScreenInit();
+    StateSetMode(MODE_SETUP);
+    
+    Serial.println("[Boot] Setup mode active - waiting for WiFi config via app");
+    // Don't proceed further - loop() will handle waiting
+    return;
   }
   
+  // === NORMAL BOOT: Full initialization ===
+  
+  // Stage 2: WiFi
+  BootLoaderShowStage(BOOT_STAGE_WIFI, false);
+  char ssid[33], pass[65];
+  ConfigLoadWifi(ssid, pass);
+  WifiConnect(ssid, pass);
+  
   // Stage 3: Time
-  BootLoaderShowStage(BOOT_STAGE_TIME, isFirstBoot);
+  BootLoaderShowStage(BOOT_STAGE_TIME, false);
   TimeInit();
   if (WifiIsConnected()) {
     NtpUpdate();
   }
   
   // Stage 4: Services
-  BootLoaderShowStage(BOOT_STAGE_SERVICES, isFirstBoot);
+  BootLoaderShowStage(BOOT_STAGE_SERVICES, false);
   OtaInit();
   BleInit();
   VoiceInit();
@@ -94,29 +112,51 @@ void setup() {
   BridgeInit();
   
   // Stage 5: Display
-  BootLoaderShowStage(BOOT_STAGE_DISPLAY, isFirstBoot);
+  BootLoaderShowStage(BOOT_STAGE_DISPLAY, false);
   ChatInit();
   WifiInfoInit();
   
   // Stage 6: Update Check
-  BootLoaderShowStage(BOOT_STAGE_UPDATE, isFirstBoot);
+  BootLoaderShowStage(BOOT_STAGE_UPDATE, false);
   if (WifiHasInternet()) {
     // Check for updates in background (don't block)
     // OtaCheckGithubUpdate();  // Uncomment when ready to auto-update
   }
   
   // Stage 7: Complete
-  BootLoaderShowStage(BOOT_STAGE_COMPLETE, isFirstBoot);
+  BootLoaderShowStage(BOOT_STAGE_COMPLETE, false);
   delay(500);
   BootLoaderComplete();
   
   // Force initial render to Time mode
+  StateSetMode(MODE_TIME_DATE);
   TimeForceRender();
   
   Serial.println("Quil ready");
 }
 
 void loop() {
+  DisplayMode_t mode = StateGetMode();
+  
+  // === SETUP MODE: First boot - waiting for WiFi configuration ===
+  if (mode == MODE_SETUP) {
+    BleLoop();  // Handle BLE commands for WiFi config
+    
+    // Check if WiFi credentials have been configured via BLE
+    if (WifiHasSavedCredentials()) {
+      Serial.println("[Setup] WiFi configured! Restarting...");
+      delay(1000);
+      ESP.restart();
+    }
+    
+    // Update and render setup screen
+    SetupScreenUpdate();
+    delay(50);
+    return;
+  }
+  
+  // === NORMAL MODE: Full operation ===
+  
   // WiFi reconnection task - handles automatic reconnection and internet checks
   WifiReconnectTask();
   
@@ -155,7 +195,6 @@ void loop() {
     return;
   }
   
-  DisplayMode_t mode = StateGetMode();
   switch(mode) {
     case MODE_TIME_DATE:
       TimeUpdate();
@@ -166,9 +205,13 @@ void loop() {
       ChatUpdate();
       ChatRender();
       break;
+      
     case MODE_WIFI_INFO:
       WifiInfoUpdate();
       WifiInfoRender();
+      break;
+      
+    default:
       break;
   }
   

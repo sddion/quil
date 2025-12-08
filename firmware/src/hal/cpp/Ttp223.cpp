@@ -67,7 +67,26 @@ void TtpUpdate() {
 
 static bool read_pin_debounced(SensorData* s) {
   unsigned long now = millis();
-  bool current = digitalRead(s->pin);
+  
+  // Multi-sample filtering: take multiple readings and require majority
+  // This helps filter out EMI, proximity triggers, and backside touches
+  int samples = 0;
+  int high_count = 0;
+  const int SAMPLE_COUNT = 5;
+  const int SAMPLE_DELAY_US = 1000;  // 1ms between samples
+  
+  for (int i = 0; i < SAMPLE_COUNT; i++) {
+    if (digitalRead(s->pin)) {
+      high_count++;
+    }
+    if (i < SAMPLE_COUNT - 1) {
+      delayMicroseconds(SAMPLE_DELAY_US);
+    }
+    samples++;
+  }
+  
+  // Require 4 out of 5 samples to agree (80% threshold)
+  bool current = (high_count >= 4);
   
   if (current != s->last_reading) {
     s->debounce_start = now;
@@ -105,9 +124,14 @@ static void update_sensor(SensorData* sensor, TouchSensor_t id) {
         unsigned long press_duration = now - sensor->press_start_time;
         sensor->release_time = now;
         
-        if (press_duration < TAP_TIMEOUT) {
+        // Require minimum touch duration to filter false triggers
+        if (press_duration >= MIN_TOUCH_DURATION && press_duration < TAP_TIMEOUT) {
           sensor->tap_count++;
           sensor->state = STATE_WAIT_DOUBLE_TAP;
+        } else if (press_duration < MIN_TOUCH_DURATION) {
+          // Too short - likely false trigger, ignore
+          sensor->state = STATE_IDLE;
+          sensor->tap_count = 0;
         } else {
           sensor->state = STATE_IDLE;
           sensor->tap_count = 0;

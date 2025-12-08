@@ -38,10 +38,12 @@ struct CombinedGestureData {
 };
 
 // Timing configuration (all in milliseconds)
-#define DEBOUNCE_TIME 50
+// Increased debounce to filter proximity/false triggers
+#define DEBOUNCE_TIME 100
 #define TAP_TIMEOUT 300
 #define DOUBLE_TAP_WINDOW 400
 #define LONG_PRESS_TIME 800
+#define MIN_TOUCH_DURATION 80  // Minimum duration to register as valid touch
 
 // HAL functions
 void TtpInit();

@@ -27,7 +27,19 @@ DisplayMode_t StateGetMode() {
 }
 
 void StateCycleMode() {
-  current_mode = (DisplayMode_t)((current_mode + 1) % 5);
+  // Skip MODE_SETUP (0) - only cycle through TIME_DATE, CHAT, WIFI_INFO
+  switch (current_mode) {
+    case MODE_TIME_DATE:
+      current_mode = MODE_CHAT;
+      break;
+    case MODE_CHAT:
+      current_mode = MODE_WIFI_INFO;
+      break;
+    case MODE_WIFI_INFO:
+    default:
+      current_mode = MODE_TIME_DATE;
+      break;
+  }
 }
 
 RobotState_t StateGetRobot() {
