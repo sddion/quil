@@ -16,20 +16,17 @@ const queryClient = new QueryClient();
 
 function RootLayoutNav() {
   return (
-    <Stack screenOptions={{ headerBackTitle: "Back" }}>
-      <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="devices" options={{
-        title: "Device Management",
-        presentation: "modal"
-      }} />
-      <Stack.Screen name="onboarding" options={{
+    <Stack 
+      screenOptions={{ 
         headerShown: false,
-        presentation: "modal"
-      }} />
-      <Stack.Screen name="help" options={{
-        title: "Help & Support",
-        presentation: "modal"
-      }} />
+        contentStyle: { backgroundColor: '#0a0e27' },
+        animation: 'slide_from_right'
+      }}
+    >
+      <Stack.Screen name="index" />
+      <Stack.Screen name="devices" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="onboarding" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="help" options={{ presentation: 'modal' }} />
       <Stack.Screen name="+not-found" />
     </Stack>
   );

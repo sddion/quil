@@ -4,30 +4,32 @@
     "slug": "quil",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/AppIcons/playstore.png",
     "scheme": "quil-app",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/splash-icon.png",
+      "image": "./assets/images/AppIcons/playstore.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0a0e27"
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "app.sddion.quil"
+      "bundleIdentifier": "app.sddion.quil",
+      "icon": "./assets/images/AppIcons/appstore.png"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/AppIcons/android/mipmap-xxxhdpi/ic_launcher.png",
+        "backgroundColor": "#0a0e27"
       },
       "package": "app.sddion.quil",
       "permissions": [
         "android.permission.VIBRATE",
         "android.permission.INTERNET",
         "android.permission.REQUEST_INSTALL_PACKAGES"
-      ]
+      ],
+      "softwareKeyboardLayoutMode": "pan"
     },
 
     "plugins": [
