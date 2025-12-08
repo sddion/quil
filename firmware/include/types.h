@@ -1,10 +1,10 @@
  #pragma once
 
 typedef enum {
-  MODE_SETUP,      // First boot setup mode - waiting for WiFi config
   MODE_TIME_DATE,
   MODE_CHAT,
-  MODE_WIFI_INFO
+  MODE_WIFI_INFO,
+  MODE_SETUP       // First boot setup mode - waiting for WiFi config (at end for backward compat)
 } DisplayMode_t;
 
 typedef enum {

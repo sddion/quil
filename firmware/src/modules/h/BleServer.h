@@ -6,3 +6,4 @@ void BleLoop();
 void BleSendStatus();
 bool BleIsConnected();
 void BleStop();
+void BleNotifySetupComplete();

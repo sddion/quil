@@ -208,3 +208,12 @@ void BleStop() {
     Serial.println("[BLE] Server stopped");
   }
 }
+
+void BleNotifySetupComplete() {
+  if (!pStatusChar || !deviceConnected) return;
+  
+  String notification = "{\"event\":\"setup_complete\",\"status\":\"success\"}";
+  pStatusChar->setValue(notification.c_str());
+  pStatusChar->notify();
+  Serial.println("[BLE] Setup complete notification sent");
+}

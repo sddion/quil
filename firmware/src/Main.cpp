@@ -92,9 +92,13 @@ void setup() {
   
   // Stage 2: WiFi
   BootLoaderShowStage(BOOT_STAGE_WIFI, false);
-  char ssid[33], pass[65];
-  ConfigLoadWifi(ssid, pass);
-  WifiConnect(ssid, pass);
+  char ssid[33] = {0}, pass[65] = {0};
+  if (ConfigLoadWifi(ssid, pass)) {
+    WifiConnect(ssid, pass);
+  } else {
+    Serial.println("[Boot] Failed to load WiFi credentials");
+    // Consider fallback behavior: enter setup mode or show error
+  }
   
   // Stage 3: Time
   BootLoaderShowStage(BOOT_STAGE_TIME, false);
@@ -145,6 +149,8 @@ void loop() {
     // Check if WiFi credentials have been configured via BLE
     if (WifiHasSavedCredentials()) {
       Serial.println("[Setup] WiFi configured! Restarting...");
+      // Send confirmation to BLE client before restart
+      BleNotifySetupComplete();
       delay(1000);
       ESP.restart();
     }

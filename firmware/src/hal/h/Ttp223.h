@@ -43,7 +43,7 @@ struct CombinedGestureData {
 #define TAP_TIMEOUT 300
 #define DOUBLE_TAP_WINDOW 400
 #define LONG_PRESS_TIME 800
-#define MIN_TOUCH_DURATION 80  // Minimum duration to register as valid touch
+#define MIN_TOUCH_DURATION 120  // Must be > DEBOUNCE_TIME to be meaningful
 
 // HAL functions
 void TtpInit();
