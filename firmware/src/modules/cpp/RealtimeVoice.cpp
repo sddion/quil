@@ -159,7 +159,7 @@ void RealtimeVoiceInterrupt() {
   PlaybackReadPos = 0;
   
   // Send interrupt with approximate audio position
-  StaticJsonDocument<128> Doc;
+  JsonDocument Doc;
   Doc["type"] = "instruction";
   Doc["msg"] = "INTERRUPT";
   Doc["audio_end_ms"] = 0; // TODO: Track actual playback position
@@ -196,7 +196,7 @@ static void OnWsEvent(WStype_t Type, uint8_t* Payload, size_t Length) {
       
     case WStype_TEXT: {
       // Parse JSON message from server
-      StaticJsonDocument<512> Doc;
+      JsonDocument Doc;
       DeserializationError Error = deserializeJson(Doc, Payload, Length);
       
       if (Error) {

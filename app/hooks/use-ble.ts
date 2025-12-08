@@ -1,6 +1,5 @@
 import createContextHook from '@nkzw/create-context-hook';
 import { useCallback, useEffect, useState, useRef } from 'react';
-import { Platform, Alert } from 'react-native';
 import { bleManager, type BLEDevice, type ConnectionState, type DeviceStatus } from '@/lib/ble-manager';
 import * as Haptics from 'expo-haptics';
 
@@ -27,12 +26,7 @@ export const [BLEProvider, useBLE] = createContextHook(() => {
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to initialize Bluetooth';
         console.error('[BLE Hook] Initialization error:', errorMessage);
-        
-        if (Platform.OS !== 'web') {
-          setError('Bluetooth requires a custom development build. Not available in Expo Go.');
-        } else {
-          setError(errorMessage);
-        }
+        setError(errorMessage);
       }
     };
     init();
@@ -48,19 +42,10 @@ export const [BLEProvider, useBLE] = createContextHook(() => {
     try {
       setError(null);
       
-      if (Platform.OS !== 'web') {
-        Alert.alert(
-          'Bluetooth Not Available',
-          'Native Bluetooth is not available in Expo Go. This app requires a custom development build to use Bluetooth on native devices.\n\nFor now, you can test the app in a web browser with Bluetooth support.',
-          [{ text: 'OK' }]
-        );
-        setError('Bluetooth requires custom development build');
-        return;
-      }
-      
+      // Request permissions (handles both native and web)
       const hasPermission = await bleManager.requestPermissions();
       if (!hasPermission) {
-        setError('Bluetooth permissions denied');
+        setError('Bluetooth permissions denied. Please allow Bluetooth access in Settings.');
         return;
       }
       
