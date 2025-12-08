@@ -12,7 +12,7 @@ void CompactThemeRender(int hour, int minute, const char* dateStr, const char* d
   if (wifiConnected) {
     StatusIconsDrawWifi(2, 2, rssi);
   }
-  StatusIconsDrawBluetooth(25, 2, btConnected);
+  StatusIconsDrawBluetooth(33, 2, btConnected);
   
   // Battery at top right
   if (BatteryIsConnected()) {
@@ -22,6 +22,7 @@ void CompactThemeRender(int hour, int minute, const char* dateStr, const char* d
   // Big time with Org_01 font
   display.setTextColor(SSD1306_WHITE);
   display.setTextSize(4);
+  display.setTextWrap(false);
   display.setFont(&Org_01);
   
   char timeStr[6];

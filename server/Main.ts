@@ -61,7 +61,7 @@ function ValidateConfig(): boolean {
 
 function StartServer(): void {
     if (!ValidateConfig()) {
-        Deno.exit(1);
+        throw new Error("Server configuration invalid. Check environment variables.");
     }
 
     console.log("╔════════════════════════════════════════╗");

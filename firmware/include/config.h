@@ -49,3 +49,6 @@
 // OTA GitHub configuration
 #define GITHUB_USER "sddion"
 #define GITHUB_REPO "quil"
+
+// Quil Server
+#define QUIL_SERVER_URL "wss://quil.deno.dev/ws"

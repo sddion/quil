@@ -40,7 +40,7 @@ Streams audio to the Quil server over WebSocket for AI processing.
 RealtimeVoiceInit();
 
 // Connect to server
-RealtimeVoiceConnect("wss://myquilbot.vercel.app/ws");
+RealtimeVoiceConnect("wss://myquilbot-5p9j92amhsxa.deno.dev/ws");
 
 // In loop()
 RealtimeVoiceLoop();

@@ -54,6 +54,19 @@ void TimeUpdate() {
   }
 }
 
+// Helper to convert weather condition to icon code
+static uint8_t GetWeatherCode(const String& condition) {
+  String cond = condition;
+  cond.toLowerCase();
+  if (cond.indexOf("rain") >= 0 || cond.indexOf("drizzle") >= 0) return WEATHER_CLOUD_RAIN;
+  if (cond.indexOf("snow") >= 0 || cond.indexOf("sleet") >= 0) return WEATHER_CLOUD_SNOW;
+  if (cond.indexOf("thunder") >= 0 || cond.indexOf("storm") >= 0) return WEATHER_CLOUD_LIGHTNING;
+  if (cond.indexOf("wind") >= 0) return WEATHER_WIND;
+  if (cond.indexOf("cloud") >= 0 || cond.indexOf("overcast") >= 0) return WEATHER_CLOUD_SUNNY;
+  if (cond.indexOf("sun") >= 0 || cond.indexOf("clear") >= 0) return WEATHER_SUN;
+  return WEATHER_CLOUD_SUNNY; // Default
+}
+
 // THEME 1: Elaborate Theme (Default)
 void TimeRenderElaborate() {
   int hour = NtpGetHour();
@@ -66,9 +79,11 @@ void TimeRenderElaborate() {
   bool wifiConnected = WifiIsConnected();
   bool btConnected = BleIsConnected();
   
-  uint8_t weatherCode = WEATHER_CLOUD_SUNNY; // Placeholder
-  const char* tempStr = "25.6C";
-  const char* condStr = "Cloudy";
+  // Use actual weather data
+  uint8_t weatherCode = GetWeatherCode(weatherData.condition);
+  char tempStr[10];
+  snprintf(tempStr, sizeof(tempStr), "%.1fC", weatherData.temperature_c);
+  const char* condStr = weatherData.success ? weatherData.condition.c_str() : "--";
   
   DefaultThemeRender(hour, minute, dateStr.c_str(), dayStr.c_str(), 
                     batteryPct, rssi, wifiConnected, btConnected,
@@ -87,9 +102,11 @@ void TimeRenderCompact() {
   bool wifiConnected = WifiIsConnected();
   bool btConnected = BleIsConnected();
   
-  uint8_t weatherCode = WEATHER_CLOUD_RAIN; // Placeholder
-  const char* tempStr = "25.6c";
-  const char* condStr = "Rainy";
+  // Use actual weather data
+  uint8_t weatherCode = GetWeatherCode(weatherData.condition);
+  char tempStr[10];
+  snprintf(tempStr, sizeof(tempStr), "%.1fc", weatherData.temperature_c);
+  const char* condStr = weatherData.success ? weatherData.condition.c_str() : "--";
   
   CompactThemeRender(hour, minute, dateStr.c_str(), dayStr.c_str(), 
                     batteryPct, rssi, wifiConnected, btConnected,
