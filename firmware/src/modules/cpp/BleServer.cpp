@@ -4,6 +4,7 @@
 #include "../h/WifiManager.h"
 #include "../../modes/h/Time.h"
 #include "hal/h/Display.h"
+#include "config.h"
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
@@ -175,7 +176,8 @@ void BleSendStatus() {
                   ",\"timezone\":" + String(tz) +
                   ",\"brightness\":" + String(brightness) +
                   ",\"theme\":" + String(theme) +
-                  ",\"firmwareVersion\":\"1.0.0\"}";
+                  ",\"firmwareVersion\":\"" FIRMWARE_VERSION "\"}";
+
   
   pStatusChar->setValue(status.c_str());
   if (deviceConnected) {
