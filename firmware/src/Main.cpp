@@ -70,11 +70,12 @@ void setup() {
   g_isFirstBoot = !WifiHasSavedCredentials();
   
   if (g_isFirstBoot) {
-    // === FIRST BOOT: Start AP and BLE, then wait for configuration ===
+    // === FIRST BOOT: Start BLE (primary) and Web Portal (fallback) ===
     Serial.println("[Boot] First boot - entering setup mode");
     
     BootLoaderShowStage(BOOT_STAGE_WIFI, true);
-    WifiStartAp();
+    // Start web portal (which also starts AP mode)
+    WifiStartPortal();
     
     BootLoaderShowStage(BOOT_STAGE_SERVICES, true);
     BleInit();
@@ -83,7 +84,9 @@ void setup() {
     SetupScreenInit();
     StateSetMode(MODE_SETUP);
     
-    Serial.println("[Boot] Setup mode active - waiting for WiFi config via app");
+    Serial.println("[Boot] Setup mode active - BLE (primary) + Web Portal (fallback)");
+    Serial.printf("[Boot] Connect to WiFi: %s (Password: %s)\n", WIFI_AP_SSID, WIFI_AP_PASS);
+    Serial.printf("[Boot] Or use Quil app for Bluetooth setup\n");
     // Don't proceed further - loop() will handle waiting
     return;
   }
@@ -144,11 +147,14 @@ void loop() {
   
   // === SETUP MODE: First boot - waiting for WiFi configuration ===
   if (mode == MODE_SETUP) {
-    BleLoop();  // Handle BLE commands for WiFi config
+    BleLoop();           // Handle BLE commands for WiFi config
+    WifiPortalLoop();    // Handle web portal requests
     
-    // Check if WiFi credentials have been configured via BLE
-    if (WifiHasSavedCredentials()) {
+    // Check if WiFi credentials have been configured (via BLE or web portal)
+    if (WifiHasSavedCredentials() && WifiIsConnected()) {
       Serial.println("[Setup] WiFi configured! Restarting...");
+      // Stop portal
+      WifiStopPortal();
       // Send confirmation to BLE client before restart
       BleNotifySetupComplete();
       delay(1000);

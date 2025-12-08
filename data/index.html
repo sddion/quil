@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Quil Setup</title>
+        <link rel="stylesheet" href="styles.css">
+    </head>
+    <body>
+        <div class="container">
+            <div class="logo">
+                <svg viewBox="0 0 100 100" width="80" height="80">
+                    <circle
+                        cx="50"
+                        cy="50"
+                        r="45"
+                        fill="none"
+                        stroke="url(#gradient)"
+                        stroke-width="4"
+                    />
+                    <path
+                        d="M35 50 Q50 30 65 50 Q50 70 35 50"
+                        fill="url(#gradient)"
+                    />
+                    <defs>
+                        <linearGradient
+                            id="gradient"
+                            x1="0%"
+                            y1="0%"
+                            x2="100%"
+                            y2="100%"
+                        >
+                            <stop offset="0%" style="stop-color: #6366f1" />
+                            <stop offset="100%" style="stop-color: #8b5cf6" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+            <h1>Quil Setup</h1>
+            <p class="subtitle">Connect your device to WiFi</p>
+
+            <div id="status" class="status hidden"></div>
+
+            <form id="wifi-form">
+                <div class="form-group">
+                    <label for="ssid">WiFi Network</label>
+                    <div class="select-wrapper">
+                        <select id="ssid" name="ssid" required>
+                            <option value="">Scanning...</option>
+                        </select>
+                        <button
+                            type="button"
+                            id="refresh-btn"
+                            class="refresh-btn"
+                            title="Refresh networks"
+                        >
+                            &#8635;
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Enter WiFi password"
+                    >
+                    <button type="button" id="toggle-pass" class="toggle-pass">
+                        Show
+                    </button>
+                </div>
+
+                <button type="submit" id="connect-btn" class="btn-primary">
+                    <span id="btn-text">Connect</span>
+                    <span id="btn-loader" class="loader hidden"></span>
+                </button>
+            </form>
+
+            <div id="success" class="success hidden">
+                <div class="success-icon">✓</div>
+                <h2>Connected!</h2>
+                <p>Your Quil device is now online.</p>
+                <p class="ip-info">IP: <span id="device-ip"></span></p>
+            </div>
+
+            <footer>
+                <p>Having trouble? Use the Quil app for Bluetooth setup.</p>
+            </footer>
+        </div>
+        <script src="script.js"></script>
+    </body>
+</html>

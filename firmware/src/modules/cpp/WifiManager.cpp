@@ -220,3 +220,67 @@ bool WifiHasSavedCredentials() {
   char ssid[33], pass[65];
   return ConfigLoadWifi(ssid, pass) && strlen(ssid) > 0;
 }
+
+// ============ Portal Mode Functions ============
+
+#include "../h/WebPortal.h"
+
+static bool portal_mode = false;
+
+bool WifiStartPortal() {
+  Serial.println("[WiFi] Starting configuration portal...");
+  
+  // Start AP mode first
+  if (!WifiStartAp()) {
+    Serial.println("[WiFi] Failed to start AP for portal");
+    return false;
+  }
+  
+  // Initialize and start web portal
+  if (!WebPortalInit()) {
+    Serial.println("[WiFi] Failed to init web portal");
+    return false;
+  }
+  
+  WebPortalStart();
+  portal_mode = true;
+  
+  Serial.println("[WiFi] Portal mode active");
+  return true;
+}
+
+void WifiStopPortal() {
+  if (portal_mode) {
+    WebPortalStop();
+    portal_mode = false;
+    Serial.println("[WiFi] Portal stopped");
+  }
+}
+
+bool WifiIsPortalMode() {
+  return portal_mode;
+}
+
+void WifiPortalLoop() {
+  if (portal_mode) {
+    WebPortalLoop();
+    
+    // Check if we got connected through the portal
+    if (WiFi.status() == WL_CONNECTED) {
+      Serial.println("[WiFi] Connected via portal!");
+      Serial.print("[WiFi] IP: ");
+      Serial.println(WiFi.localIP());
+      
+      // Save credentials
+      String ssid = WiFi.SSID();
+      String psk = WiFi.psk();
+      ConfigSaveWifi(ssid.c_str(), psk.c_str());
+      
+      wifi_connected = true;
+      internet_connected = WifiCheckInternet();
+      
+      // Keep portal running briefly so user sees success message
+      // Then it will be stopped by main loop
+    }
+  }
+}
