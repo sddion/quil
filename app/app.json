@@ -2,7 +2,7 @@
   "expo": {
     "name": "Quil",
     "slug": "quil",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/AppIcons/playstore.png",
     "scheme": "quil-app",
@@ -31,7 +31,6 @@
       ],
       "softwareKeyboardLayoutMode": "pan"
     },
-
     "plugins": [
       [
         "expo-router",
@@ -39,7 +38,7 @@
           "origin": "https://meetquil.vercel.app/"
         }
       ],
-       [
+      [
         "expo-build-properties",
         {
           "android": {
@@ -57,6 +56,14 @@
       "typedRoutes": true
     },
     "jsEngine": "hermes",
-    "runtimeVersion": "2.1.1"
+    "runtimeVersion": "2.1.1",
+    "extra": {
+      "router": {
+        "origin": "https://meetquil.vercel.app/"
+      },
+      "eas": {
+        "projectId": "13bcd84f-a3ad-461f-a2a4-9a00341d7889"
+      }
+    }
   }
 }

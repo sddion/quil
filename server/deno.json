@@ -1,6 +1,6 @@
 {
     "name": "quil-server",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "tasks": {
         "Dev": "deno run -A --watch --env-file=.env Main.ts",
         "Start": "deno run -A --env-file=.env Main.ts",
