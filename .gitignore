@@ -8,7 +8,6 @@
 Thumbs.db
 ehthumbs.db
 Desktop.ini
-firmware/secrets.env
 node_modules/
 package-lock.json
 
