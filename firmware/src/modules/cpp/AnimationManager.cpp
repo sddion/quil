@@ -24,7 +24,7 @@ void AnimPlay(AnimationType type) {
   last_frame_time = millis();
   
   switch(type) {
-    case ANIM_THINKING:
+    case ANIM_CONVERSATION:
       frame_array = thinking_frames;
       total_frames = THINKING_FRAMES;
       break;
@@ -63,7 +63,7 @@ void AnimUpdate() {
       playing = false;
       current_anim = ANIM_NONE;
     } else {
-      // Other animations can loop
+      // Conversation animation loops
       current_frame = 0;
     }
   }

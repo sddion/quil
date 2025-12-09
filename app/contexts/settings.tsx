@@ -20,12 +20,12 @@ const SETTINGS_KEY = '@quil_app_settings';
 const defaultSettings: AppSettings = {
   wifiSSID: '',
   wifiPassword: '',
-  timezone: 'America/New_York',
+  timezone: 'Asia/Kolkata',
   weatherAPIKey: '',
   weatherLocation: '',
   brightness: 128,
   selectedTheme: 'default',
-  voiceId: 'shimmer',
+  voiceId: 'coral',
   language: 'en',
   lastSyncedAt: null,
 };

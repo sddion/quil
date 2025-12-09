@@ -10,7 +10,7 @@
 #include "modules/h/ConfigStore.h"
 #include "modules/h/WifiManager.h"
 #include "modules/h/NtpClient.h"
-#include "modules/h/BleServer.h"
+#include "modules/h/WebPortal.h"
 #include "modules/h/GestureManager.h"
 #include "modules/h/TouchActions.h"
 #include "modules/h/VoiceManager.h"
@@ -67,7 +67,7 @@ void setup() {
   g_isFirstBoot = !WifiHasSavedCredentials();
   
   if (g_isFirstBoot) {
-    // === FIRST BOOT: Start BLE (primary) and Web Portal (fallback) ===
+    // === FIRST BOOT: Start Web Portal for WiFi setup ===
     Serial.println("[Boot] First boot - entering setup mode");
     
     BootLoaderShowStage(BOOT_STAGE_WIFI, true);
@@ -75,15 +75,13 @@ void setup() {
     WifiStartPortal();
     
     BootLoaderShowStage(BOOT_STAGE_SERVICES, true);
-    BleInit();
     
     // Initialize SetupScreen and start waiting
     SetupScreenInit();
     StateSetMode(MODE_SETUP);
     
-    Serial.println("[Boot] Setup mode active - BLE (primary) + Web Portal (fallback)");
+    Serial.println("[Boot] Setup mode active - Web Portal");
     Serial.printf("[Boot] Connect to WiFi: %s (Password: %s)\n", WIFI_AP_SSID, WIFI_AP_PASS);
-    Serial.printf("[Boot] Or use Quil app for Bluetooth setup\n");
     // Don't proceed further - loop() will handle waiting
     return;
   }
@@ -109,13 +107,10 @@ void setup() {
   
   // Stage 4: Services
   BootLoaderShowStage(BOOT_STAGE_SERVICES, false);
-  BleInit();
   VoiceInit();
   WakeInit();
   RealtimeVoiceInit();
-  if (WifiIsConnected()) {
-    RealtimeVoiceConnect(QUIL_SERVER_URL);
-  }
+  // Don't connect WebSocket during boot - wait for wake to save memory
   ConversationInit();
   
   // Stage 5: Display
@@ -145,13 +140,11 @@ void loop() {
   
   // === SETUP MODE: First boot - waiting for WiFi configuration ===
   if (mode == MODE_SETUP) {
-    BleLoop();
     WifiPortalLoop();
     
     if (WifiHasSavedCredentials() && WifiIsConnected()) {
       Serial.println("[Setup] WiFi configured! Restarting...");
       WifiStopPortal();
-      BleNotifySetupComplete();
       delay(1000);
       ESP.restart();
     }
@@ -167,7 +160,7 @@ void loop() {
   WifiReconnectTask();
   StateUpdate();
   DiagUpdate();
-  BleLoop();
+  WifiPortalLoop();  // Handle HTTP config requests
   
   // Touch handling (mute toggle)
   NativeTouchUpdate();
@@ -200,8 +193,10 @@ void loop() {
     // Check timeout - return to clock
     if (ConversationTimedOut()) {
       RealtimeVoiceStopListening();
+      RealtimeVoiceDisconnect();  // Free WebSocket memory
       ConversationEnd();
       StateSetMode(MODE_CLOCK);
+      VoiceStartListening();  // Resume wake detection
     }
   }
   
@@ -220,6 +215,8 @@ void loop() {
     // Check for wake (voice activity)
     if (WakeDetect()) {
       Serial.println("[Main] Wake detected - starting conversation");
+      Serial.printf("[Main] Free heap: %d bytes\n", ESP.getFreeHeap());
+      
       StateSetMode(MODE_CONVERSATION);
       ConversationStart();
       

@@ -3,7 +3,7 @@
 
 typedef enum {
   ANIM_NONE,
-  ANIM_THINKING,
+  ANIM_CONVERSATION,
   ANIM_BOOT
 } AnimationType;
 

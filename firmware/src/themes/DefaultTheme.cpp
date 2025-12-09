@@ -50,7 +50,7 @@ void DefaultThemeRender(int hour, int minute, const char* dateStr, const char* d
   
   display.setTextSize(5);
   display.setFont(&Org_01);
-  display.setCursor(69, 45);
+  display.setCursor(75, 45);
   display.print(minStr);
   
   display.setFont();  // Reset to default for rest

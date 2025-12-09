@@ -7,7 +7,6 @@
 #include "modules/h/BatteryManager.h"
 #include "modules/h/StatusIcons.h"
 #include "modules/h/WifiManager.h"
-#include "modules/h/BleServer.h"
 #include <Adafruit_GFX.h>
 
 #include "assets/fonts/Org_01.h"
@@ -77,7 +76,7 @@ void TimeRenderElaborate() {
   uint8_t batteryPct = BatteryGetPercentage();
   int rssi = WifiGetRssi();
   bool wifiConnected = WifiIsConnected();
-  bool btConnected = BleIsConnected();
+  bool btConnected = false;  // BLE removed
   
   // Use actual weather data
   uint8_t weatherCode = GetWeatherCode(weatherData.condition);
@@ -100,7 +99,7 @@ void TimeRenderCompact() {
   uint8_t batteryPct = BatteryGetPercentage();
   int rssi = WifiGetRssi();
   bool wifiConnected = WifiIsConnected();
-  bool btConnected = BleIsConnected();
+  bool btConnected = false;  // BLE removed
   
   // Use actual weather data
   uint8_t weatherCode = GetWeatherCode(weatherData.condition);

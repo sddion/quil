@@ -1,4 +1,5 @@
 #include "../h/ConversationManager.h"
+#include "../h/AnimationManager.h"
 #include "hal/h/Display.h"
 #include "modules/h/VoiceManager.h"
 
@@ -23,6 +24,9 @@ void ConversationStart() {
   // Start listening for voice input
   VoiceStartListening();
   
+  // Play conversation animation
+  AnimPlay(ANIM_CONVERSATION);
+  
   Serial.println("[Conversation] Started - listening for input");
 }
 
@@ -31,6 +35,9 @@ void ConversationEnd() {
   
   // Stop voice processing
   VoiceStopListening();
+  
+  // Stop animation
+  AnimStop();
   
   Serial.println("[Conversation] Ended - returning to clock");
 }

@@ -44,56 +44,81 @@ void RealtimeVoiceInit() {
 }
 
 bool RealtimeVoiceConnect(const char* ServerUrl) {
+  // Don't reconnect if already connected
+  if (IsConnected) {
+    Serial.println("[RealtimeVoice] Already connected");
+    return true;
+  }
+  
+  // Check heap - SSL needs ~30KB minimum
+  size_t freeHeap = ESP.getFreeHeap();
+  Serial.printf("[RealtimeVoice] Free heap: %d bytes\n", freeHeap);
+  if (freeHeap < 20000) {
+    Serial.println("[RealtimeVoice] Not enough memory for SSL");
+    return false;
+  }
+  
   Serial.print("[RealtimeVoice] Connecting to: ");
   Serial.println(ServerUrl);
   
-  // Parse URL (expects format: ws://host:port/path or wss://...)
-  String Url = String(ServerUrl);
-  bool UseSSL = Url.startsWith("wss://");
+  // Use static buffers to avoid heap allocation
+  static char Host[64];
+  static char Path[32];
+  uint16_t Port = 443;
+  bool UseSSL = true;
   
-  // Remove protocol
-  if (UseSSL) {
-    Url = Url.substring(6);
-  } else if (Url.startsWith("ws://")) {
-    Url = Url.substring(5);
+  // Simple URL parsing without String class
+  const char* p = ServerUrl;
+  
+  // Check protocol
+  if (strncmp(p, "wss://", 6) == 0) {
+    UseSSL = true;
+    p += 6;
+  } else if (strncmp(p, "ws://", 5) == 0) {
+    UseSSL = false;
+    p += 5;
+    Port = 80;
   }
   
-  // Extract host, port, path
-  int ColonIdx = Url.indexOf(':');
-  int SlashIdx = Url.indexOf('/');
+  // Find path start
+  const char* pathStart = strchr(p, '/');
+  const char* portStart = strchr(p, ':');
   
-  String Host;
-  uint16_t Port;
-  String Path = "/ws";
-  
-  if (ColonIdx > 0 && (SlashIdx < 0 || ColonIdx < SlashIdx)) {
-    Host = Url.substring(0, ColonIdx);
-    if (SlashIdx > 0) {
-      Port = Url.substring(ColonIdx + 1, SlashIdx).toInt();
-      Path = Url.substring(SlashIdx);
-    } else {
-      Port = Url.substring(ColonIdx + 1).toInt();
-    }
-  } else if (SlashIdx > 0) {
-    Host = Url.substring(0, SlashIdx);
-    Port = UseSSL ? 443 : 80;
-    Path = Url.substring(SlashIdx);
+  // Extract host
+  size_t hostLen;
+  if (portStart && (!pathStart || portStart < pathStart)) {
+    hostLen = portStart - p;
+    Port = atoi(portStart + 1);
+  } else if (pathStart) {
+    hostLen = pathStart - p;
   } else {
-    Host = Url;
-    Port = UseSSL ? 443 : 80;
+    hostLen = strlen(p);
+  }
+  hostLen = min(hostLen, sizeof(Host) - 1);
+  memcpy(Host, p, hostLen);
+  Host[hostLen] = '\0';
+  
+  // Extract path
+  if (pathStart) {
+    strncpy(Path, pathStart, sizeof(Path) - 1);
+    Path[sizeof(Path) - 1] = '\0';
+  } else {
+    strcpy(Path, "/ws");
   }
   
-  Serial.printf("[RealtimeVoice] Host: %s, Port: %d, Path: %s\n", 
-                Host.c_str(), Port, Path.c_str());
+  Serial.printf("[RealtimeVoice] Host: %s, Port: %d, Path: %s\n", Host, Port, Path);
   
   // Setup WebSocket
   WsClient.onEvent(OnWsEvent);
   WsClient.setReconnectInterval(5000);
   
+  // Enable heartbeat to keep connection alive
+  WsClient.enableHeartbeat(15000, 5000, 2); // ping every 15s, timeout 5s, retry 2
+  
   if (UseSSL) {
-    WsClient.beginSSL(Host.c_str(), Port, Path.c_str());
+    WsClient.beginSSL(Host, Port, Path);
   } else {
-    WsClient.begin(Host.c_str(), Port, Path.c_str());
+    WsClient.begin(Host, Port, Path);
   }
   
   return true;
@@ -188,11 +213,23 @@ static void OnWsEvent(WStype_t Type, uint8_t* Payload, size_t Length) {
       Serial.println("[RealtimeVoice] WebSocket disconnected");
       break;
       
-    case WStype_CONNECTED:
+    case WStype_CONNECTED: {
       IsConnected = true;
       LastPingTime = millis();
       Serial.println("[RealtimeVoice] WebSocket connected");
+      
+      // Send config to server to start OpenAI session
+      JsonDocument configDoc;
+      configDoc["type"] = "config";
+      configDoc["voice"] = "coral";  // Default voice
+      configDoc["language"] = "en";  // Default language
+      
+      String configJson;
+      serializeJson(configDoc, configJson);
+      WsClient.sendTXT(configJson);
+      Serial.println("[RealtimeVoice] Sent config to server");
       break;
+    }
       
     case WStype_TEXT: {
       // Parse JSON message from server

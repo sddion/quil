@@ -1,78 +1,62 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, TextInput } from 'react-native';
 import {
-  Bluetooth,
-  BluetoothConnected,
-  BluetoothSearching,
+  Wifi,
+  WifiOff,
+  Search,
   AlertTriangle,
+  CheckCircle,
 } from 'lucide-react-native';
-import type { BLEDevice, ConnectionState } from '@/lib/ble-manager';
+import type { ConnectionState } from '@/lib/device-manager';
 import { homeStyles as styles } from '@/styles/index';
 
 export interface ConnectionProps {
   connectionState: ConnectionState;
-  connectedDevice: BLEDevice | null; 
-  devices: BLEDevice[];
+  deviceIp: string | null;
   error: string | null;
-  retryCount: number;
-  maxRetries: number;
-  connectionHealth: 'good' | 'warning' | 'error';
   isConnected: boolean;
-  onConnect: (device: BLEDevice) => void;
+  onConnect: (ip?: string) => void;
   onDisconnect: () => void;
-  onStartScan: () => void;
+  onDiscover: () => void;
 }
 
 export function Connection({
   connectionState,
-  connectedDevice,
-  devices,
+  deviceIp,
   error,
-  retryCount,
-  maxRetries,
-  connectionHealth,
   isConnected,
   onConnect,
   onDisconnect,
-  onStartScan,
+  onDiscover,
 }: ConnectionProps) {
+  const [manualIp, setManualIp] = React.useState('');
+
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>CONNECTION</Text>
       <View style={styles.connectionCard}>
         <View style={styles.connectionHeader}>
           {connectionState === 'connected' && (
-            <BluetoothConnected size={24} color="#00ff88" />
+            <CheckCircle size={24} color="#00ff88" />
           )}
           {connectionState === 'connecting' && (
             <ActivityIndicator size="small" color="#00bfff" />
           )}
           {connectionState === 'scanning' && (
-            <BluetoothSearching size={24} color="#00bfff" />
+            <Search size={24} color="#00bfff" />
           )}
           {connectionState === 'disconnected' && (
-            <Bluetooth size={24} color="#666" />
+            <WifiOff size={24} color="#666" />
           )}
           <View style={styles.connectionInfo}>
             <Text style={styles.connectionStatus}>
-              {connectionState === 'connected' && 'Connected'}
-              {connectionState === 'connecting' && `Connecting... (${retryCount}/${maxRetries})`}
-              {connectionState === 'scanning' && 'Scanning...'}
+              {connectionState === 'connected' && 'Connected via WiFi'}
+              {connectionState === 'connecting' && 'Connecting...'}
+              {connectionState === 'scanning' && 'Scanning network...'}
               {connectionState === 'disconnected' && 'Disconnected'}
             </Text>
-            {connectedDevice && (
-              <Text style={styles.deviceName}>{connectedDevice.name}</Text>
-            )}
-            {isConnected && connectionHealth && (
-              <View style={styles.connectionHealthRow}>
-                <View style={[
-                  styles.healthIndicator,
-                  { backgroundColor: connectionHealth === 'good' ? '#00ff88' : connectionHealth === 'warning' ? '#ffaa00' : '#ff4444' }
-                ]} />
-                <Text style={styles.healthText}>
-                  {connectionHealth === 'good' ? 'Stable' : connectionHealth === 'warning' ? 'Fair' : 'Weak'}
-                </Text>
-              </View>
+            {deviceIp && (
+              <Text style={styles.deviceName}>{deviceIp}</Text>
             )}
           </View>
           {isConnected && (
@@ -92,33 +76,37 @@ export function Connection({
           </View>
         )}
 
-        {!isConnected && connectionState !== 'scanning' && devices.length === 0 && (
-          <TouchableOpacity
-            style={styles.scanButton}
-            onPress={onStartScan}
-          >
-            <BluetoothSearching size={20} color="#00bfff" />
-            <Text style={styles.scanButtonText}>Scan for Devices</Text>
-          </TouchableOpacity>
-        )}
+        {!isConnected && connectionState !== 'scanning' && connectionState !== 'connecting' && (
+          <>
+            <TouchableOpacity
+              style={styles.scanButton}
+              onPress={() => onConnect()}
+            >
+              <Wifi size={20} color="#00bfff" />
+              <Text style={styles.scanButtonText}>Find Quil on Network</Text>
+            </TouchableOpacity>
 
-        {!isConnected && devices.length > 0 && (
-          <View style={styles.deviceList}>
-            <Text style={styles.deviceListTitle}>Available Devices</Text>
-            {devices.map((device) => (
-              <TouchableOpacity
-                key={device.id}
-                style={styles.deviceItem}
-                onPress={() => onConnect(device)}
-              >
-                <View style={styles.deviceItemContent}>
-                  <Text style={styles.deviceItemName}>{device.name}</Text>
-                  <Text style={styles.deviceItemId}>{device.id}</Text>
-                </View>
-                <Text style={styles.deviceItemRSSI}>{device.rssi} dBm</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+            <View style={{ marginTop: 12 }}>
+              <Text style={[styles.deviceListTitle, { marginBottom: 8 }]}>Or enter IP manually:</Text>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <TextInput
+                  style={[styles.input, { flex: 1, color: '#fff' }]}
+                  placeholder="192.168.1.x"
+                  placeholderTextColor="#666"
+                  value={manualIp}
+                  onChangeText={setManualIp}
+                  keyboardType="numeric"
+                />
+                <TouchableOpacity
+                  style={[styles.scanButton, { flex: 0, paddingHorizontal: 16 }]}
+                  onPress={() => onConnect(manualIp)}
+                  disabled={!manualIp}
+                >
+                  <Text style={styles.scanButtonText}>Connect</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </>
         )}
       </View>
     </View>
