@@ -38,6 +38,9 @@ jobs:
   android-apk:
     name: Build Android APKs
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
 
     strategy:
       matrix:
@@ -46,6 +49,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -53,21 +64,22 @@ jobs:
           java-version: "17"
 
       - name: Build APK
-        run: ./gradlew assembleRelease -Pabi=${{ matrix.arch }}
+        working-directory: app/android
+        run: ./gradlew assembleRelease
 
       - name: Rename APK
         run: |
-          TAG=${GITHUB_REF_NAME}     # e.g. v2.3.7
-          CLEAN_TAG=${TAG#v}         # -> 2.3.7
+          TAG=${GITHUB_REF_NAME}
+          CLEAN_TAG=${TAG#v}
           mkdir -p output
-          mv app/build/outputs/apk/release/app-release.apk \
+          mv android/app/build/outputs/apk/release/app-release.apk \
             output/quil-${{ matrix.arch }}-v${CLEAN_TAG}.apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: apk-${{ matrix.arch }}
-          path: output/*.apk
+          path: app/output/*.apk
 
   release:
     name: Publish Release
