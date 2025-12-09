@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -75,6 +75,7 @@ export default function HomeScreen() {
   const [updateProgress, setUpdateProgress] = useState<DownloadProgress | null>(null);
   const [updateStatus, setUpdateStatus] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
+  const lastConnectedDeviceRef = useRef<string | null>(null);
 
   const wifiSSID = settings.wifiSSID;
   const wifiPassword = settings.wifiPassword;
@@ -108,10 +109,17 @@ export default function HomeScreen() {
 
   useEffect(() => {
     if (connectionState === 'connected' && connectedDevice) {
-      saveDevice(connectedDevice.id, connectedDevice.name);
-      showNotification('success', 'Connected', `Connected to ${connectedDevice.name}`);
+      // Only show notification once per device connection
+      if (lastConnectedDeviceRef.current !== connectedDevice.id) {
+        lastConnectedDeviceRef.current = connectedDevice.id;
+        saveDevice(connectedDevice.id, connectedDevice.name);
+        showNotification('success', 'Connected', `Connected to ${connectedDevice.name}`);
+      }
+    } else if (connectionState === 'disconnected') {
+      lastConnectedDeviceRef.current = null;
     }
-  }, [connectionState, connectedDevice, saveDevice, showNotification]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connectionState, connectedDevice?.id]);
 
   useEffect(() => {
     if (currentNotification) {
@@ -349,6 +357,8 @@ export default function HomeScreen() {
             <>
               <DeviceStatus deviceStatus={deviceStatus} />
               <QuickActions onQuickAction={handleQuickAction} />
+            </>
+          )}
 
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>WIFI CONFIGURATION</Text>
@@ -722,8 +732,7 @@ export default function HomeScreen() {
                   </>
                 )}
               </TouchableOpacity>
-            </>
-          )}
+
 
           <View style={styles.bottomSpacer} />
         </ScrollView>

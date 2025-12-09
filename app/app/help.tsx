@@ -35,6 +35,8 @@ export default function HelpScreen() {
         style={StyleSheet.absoluteFillObject}
       />
       <StatusBar style="light" />
+      
+      <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
@@ -108,6 +110,7 @@ export default function HelpScreen() {
             <Text style={styles.footerText}>Quil Control App v1.0.0</Text>
           </View>
         </ScrollView>
+      </SafeAreaView>
     </View>
   );
 }

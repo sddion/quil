@@ -42,6 +42,13 @@ export const [BLEProvider, useBLE] = createContextHook(() => {
     try {
       setError(null);
       
+      // Check if Bluetooth is enabled, prompt to turn on if off
+      const isBluetoothOn = await bleManager.checkAndEnableBluetooth();
+      if (!isBluetoothOn) {
+        setError('Bluetooth is turned off. Please enable Bluetooth to scan for devices.');
+        return;
+      }
+      
       // Request permissions (handles both native and web)
       const hasPermission = await bleManager.requestPermissions();
       if (!hasPermission) {

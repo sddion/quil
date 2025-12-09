@@ -8,6 +8,7 @@ import {
   Alert,
   StyleSheet,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -79,6 +80,11 @@ export default function DevicesScreen() {
     .filter(d => !d.isFavorite)
     .sort((a, b) => b.lastConnectedAt - a.lastConnectedAt);
 
+  const formatDate = (timestamp: number) => {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -87,6 +93,7 @@ export default function DevicesScreen() {
       />
       <StatusBar style="light" />
 
+      <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
           {favorites.length > 0 && (
             <View style={styles.section}>
@@ -278,6 +285,7 @@ export default function DevicesScreen() {
             </View>
           )}
         </ScrollView>
+      </SafeAreaView>
     </View>
   );
 }

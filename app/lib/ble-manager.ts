@@ -19,6 +19,35 @@ const SERVICE_UUID = '4fafc201-1fb5-459e-8fcc-c5c9c331914b';
 const CONFIG_CHAR_UUID = 'beb5483e-36e1-4688-b7f5-ea07361b26a8';
 const STATUS_CHAR_UUID = 'beb5483e-36e1-4688-b7f5-ea07361b26a9';
 
+// React Native compatible base64 helpers
+function base64Decode(base64: string): string {
+  try {
+    // Using atob which is available in React Native
+    const decoded = atob(base64);
+    // Handle UTF-8 decoding
+    return decodeURIComponent(
+      decoded
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+  } catch {
+    return base64;
+  }
+}
+
+function base64Encode(str: string): string {
+  try {
+    // Handle UTF-8 encoding
+    const encoded = encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_, p1) =>
+      String.fromCharCode(parseInt(p1, 16))
+    );
+    return btoa(encoded);
+  } catch {
+    return str;
+  }
+}
+
 class BLEManager {
   private nativeManager: NativeBleManager | null = null;
   private connectedDevice: Device | null = null;
@@ -42,22 +71,61 @@ class BLEManager {
 
     // Native platform - create BleManager instance
     this.nativeManager = new NativeBleManager();
-    
-    // Wait for Bluetooth to be powered on
-    const state = await this.nativeManager.state();
-    if (state !== State.PoweredOn) {
-      console.log('[BLE Manager] Waiting for Bluetooth to power on...');
-      await new Promise<void>((resolve) => {
-        const subscription = this.nativeManager!.onStateChange((newState) => {
-          if (newState === State.PoweredOn) {
-            subscription.remove();
-            resolve();
-          }
-        }, true);
-      });
-    }
-    
     console.log('[BLE Manager] Initialized for native Bluetooth');
+  }
+
+  async checkAndEnableBluetooth(): Promise<boolean> {
+    if (Platform.OS === 'web') {
+      return true; // Web Bluetooth handles this in requestDevice
+    }
+
+    if (!this.nativeManager) {
+      throw new Error('BLE Manager not initialized');
+    }
+
+    const state = await this.nativeManager.state();
+    console.log('[BLE Manager] Bluetooth state:', state);
+
+    if (state === State.PoweredOn) {
+      return true;
+    }
+
+    if (state === State.PoweredOff) {
+      console.log('[BLE Manager] Bluetooth is off, requesting to enable...');
+      try {
+        // This will prompt user to enable Bluetooth on Android
+        await this.nativeManager.enable();
+        
+        // Wait for Bluetooth to power on
+        return new Promise<boolean>((resolve) => {
+          const timeout = setTimeout(() => {
+            resolve(false);
+          }, 10000); // 10 second timeout
+
+          const subscription = this.nativeManager!.onStateChange((newState) => {
+            if (newState === State.PoweredOn) {
+              clearTimeout(timeout);
+              subscription.remove();
+              console.log('[BLE Manager] Bluetooth enabled successfully');
+              resolve(true);
+            }
+          }, true);
+        });
+      } catch (err) {
+        console.error('[BLE Manager] Failed to enable Bluetooth:', err);
+        return false;
+      }
+    }
+
+    if (state === State.Unauthorized) {
+      throw new Error('Bluetooth permission denied');
+    }
+
+    if (state === State.Unsupported) {
+      throw new Error('Bluetooth is not supported on this device');
+    }
+
+    return false;
   }
 
   async requestPermissions(): Promise<boolean> {
@@ -234,7 +302,7 @@ class BLEManager {
         }
         if (characteristic?.value) {
           try {
-            const decoded = Buffer.from(characteristic.value, 'base64').toString('utf-8');
+            const decoded = base64Decode(characteristic.value);
             const status = JSON.parse(decoded) as DeviceStatus;
             this.statusListeners.forEach(listener => listener(status));
           } catch (e) {
@@ -342,7 +410,7 @@ class BLEManager {
       throw new Error('Device not connected');
     }
 
-    const base64Data = Buffer.from(data, 'utf-8').toString('base64');
+    const base64Data = base64Encode(data);
     await this.connectedDevice.writeCharacteristicWithResponseForService(
       SERVICE_UUID,
       CONFIG_CHAR_UUID,
@@ -374,7 +442,7 @@ class BLEManager {
     );
     
     if (characteristic.value) {
-      return Buffer.from(characteristic.value, 'base64').toString('utf-8');
+      return base64Decode(characteristic.value);
     }
     
     return '{}';
