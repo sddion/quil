@@ -10,13 +10,12 @@
 #include "modules/h/ConfigStore.h"
 #include "modules/h/WifiManager.h"
 #include "modules/h/NtpClient.h"
-#include "modules/h/OtaManager.h"
 #include "modules/h/BleServer.h"
 #include "modules/h/GestureManager.h"
 #include "modules/h/TouchActions.h"
 #include "modules/h/VoiceManager.h"
 #include "modules/h/WakeManager.h"
-#include "modules/h/LlmBridge.h"
+#include "modules/h/RealtimeVoice.h"
 #include "modules/h/AnimationManager.h"
 #include "modules/h/BatteryManager.h"
 #include "modules/h/ConversationManager.h"
@@ -110,11 +109,13 @@ void setup() {
   
   // Stage 4: Services
   BootLoaderShowStage(BOOT_STAGE_SERVICES, false);
-  OtaInit();
   BleInit();
   VoiceInit();
   WakeInit();
-  BridgeInit();
+  RealtimeVoiceInit();
+  if (WifiIsConnected()) {
+    RealtimeVoiceConnect(QUIL_SERVER_URL);
+  }
   ConversationInit();
   
   // Stage 5: Display
@@ -166,7 +167,6 @@ void loop() {
   WifiReconnectTask();
   StateUpdate();
   DiagUpdate();
-  OtaHandle();
   BleLoop();
   
   // Touch handling (mute toggle)
@@ -187,25 +187,21 @@ void loop() {
   
   // === CONVERSATION MODE ===
   if (mode == MODE_CONVERSATION) {
+    RealtimeVoiceLoop();  // Handle WebSocket communication
     ConversationLoop();
     
-    // Stream audio to server
-    if (VoiceIsListening()) {
-      uint8_t audio[256];
-      size_t len = VoiceReadBuffer(audio, sizeof(audio));
-      if (len > 0) {
-        BridgeSendAudio(audio, len);
-      }
+    // Stream audio to server via WebSocket
+    if (RealtimeVoiceIsListening()) {
+      // RealtimeVoice handles mic streaming internally
     }
     
-    BridgeHandleResponse();
     ConversationRender();
     
     // Check timeout - return to clock
     if (ConversationTimedOut()) {
+      RealtimeVoiceStopListening();
       ConversationEnd();
       StateSetMode(MODE_CLOCK);
-      VoiceStartListening();  // Resume listening for wake
     }
   }
   
@@ -226,7 +222,12 @@ void loop() {
       Serial.println("[Main] Wake detected - starting conversation");
       StateSetMode(MODE_CONVERSATION);
       ConversationStart();
-      BridgeSendCommand("wake_quil");
+      
+      // Connect to server if not connected
+      if (!RealtimeVoiceIsConnected()) {
+        RealtimeVoiceConnect(QUIL_SERVER_URL);
+      }
+      RealtimeVoiceStartListening();
     }
     
     TimeUpdate();
