@@ -205,12 +205,23 @@ void loop() {
     if (ConversationTimedOut()) {
       ConversationEnd();
       StateSetMode(MODE_CLOCK);
+      VoiceStartListening();  // Resume listening for wake
     }
   }
   
   // === CLOCK MODE (default) ===
   else if (mode == MODE_CLOCK) {
-    // Always listening for wake word
+    // Ensure mic is always listening for wake detection
+    if (!VoiceIsListening()) {
+      VoiceStartListening();
+    }
+    
+    // Read mic to update RMS for wake detection
+    uint8_t audio[256];
+    size_t len = VoiceReadBuffer(audio, sizeof(audio));
+    (void)len; // We just need to update the internal RMS
+    
+    // Check for wake (voice activity)
     if (WakeDetect()) {
       Serial.println("[Main] Wake detected - starting conversation");
       StateSetMode(MODE_CONVERSATION);

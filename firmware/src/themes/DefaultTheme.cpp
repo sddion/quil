@@ -23,7 +23,7 @@ void DefaultThemeRender(int hour, int minute, const char* dateStr, const char* d
   display.setTextSize(1);
   display.setCursor(80, 6);
   display.print(condStr);
-  display.setCursor(80, 16);
+  display.setCursor(80,20);
   display.print(tempStr);
   
   // Separator lines

@@ -266,26 +266,35 @@ bool WifiIsPortalMode() {
   return portal_mode;
 }
 
+static unsigned long portal_connected_time = 0;
+static const unsigned long PORTAL_STOP_DELAY = 3000; // 3 seconds after connection
+
 void WifiPortalLoop() {
-  if (portal_mode) {
-    WebPortalLoop();
+  if (!portal_mode) return;
+  
+  WebPortalLoop();
+  
+  // Check if we got connected through the portal
+  if (WiFi.status() == WL_CONNECTED && wifi_connected == false) {
+    Serial.println("[WiFi] Connected via portal!");
+    Serial.print("[WiFi] IP: ");
+    Serial.println(WiFi.localIP());
     
-    // Check if we got connected through the portal
-    if (WiFi.status() == WL_CONNECTED) {
-      Serial.println("[WiFi] Connected via portal!");
-      Serial.print("[WiFi] IP: ");
-      Serial.println(WiFi.localIP());
-      
-      // Save credentials
-      String ssid = WiFi.SSID();
-      String psk = WiFi.psk();
-      ConfigSaveWifi(ssid.c_str(), psk.c_str());
-      
-      wifi_connected = true;
-      internet_connected = WifiCheckInternet();
-      
-      // Keep portal running briefly so user sees success message
-      // Then it will be stopped by main loop
+    // Note: Credentials already saved by WebPortal when user submitted form
+    // No need to save again here
+    
+    wifi_connected = true;
+    ap_mode = false;  // Clear AP mode flag
+    internet_connected = WifiCheckInternet();
+    portal_connected_time = millis();
+  }
+  
+  // Auto-stop portal after brief delay (so user sees success message)
+  if (wifi_connected && portal_connected_time > 0) {
+    if (millis() - portal_connected_time >= PORTAL_STOP_DELAY) {
+      Serial.println("[WiFi] Auto-stopping portal after connection");
+      WifiStopPortal();
+      portal_connected_time = 0;
     }
   }
 }

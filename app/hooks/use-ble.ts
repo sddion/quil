@@ -1,5 +1,6 @@
 import createContextHook from '@nkzw/create-context-hook';
 import { useCallback, useEffect, useState, useRef } from 'react';
+import { Alert, Linking, Platform } from 'react-native';
 import { bleManager, type BLEDevice, type ConnectionState, type DeviceStatus } from '@/lib/ble-manager';
 import * as Haptics from 'expo-haptics';
 
@@ -45,7 +46,23 @@ export const [BLEProvider, useBLE] = createContextHook(() => {
       // Check if Bluetooth is enabled, prompt to turn on if off
       const isBluetoothOn = await bleManager.checkAndEnableBluetooth();
       if (!isBluetoothOn) {
-        setError('Bluetooth is turned off. Please enable Bluetooth to scan for devices.');
+        Alert.alert(
+          'Bluetooth Required',
+          'Bluetooth is turned off. Please enable Bluetooth to scan for devices.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { 
+              text: 'Open Settings', 
+              onPress: () => {
+                if (Platform.OS === 'ios') {
+                  Linking.openURL('App-Prefs:Bluetooth');
+                } else {
+                  Linking.sendIntent('android.settings.BLUETOOTH_SETTINGS');
+                }
+              }
+            }
+          ]
+        );
         return;
       }
       
@@ -119,10 +136,7 @@ export const [BLEProvider, useBLE] = createContextHook(() => {
       
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       
-      const statusData = await bleManager.readCharacteristic('', '');
-      const status = JSON.parse(statusData) as DeviceStatus;
-      setDeviceStatus(status);
-      
+      // Device status will come via notifications, no need to read immediately
       startConnectionMonitoring();
       
       console.log('[BLE Hook] Connected to:', device.name);

@@ -11,6 +11,13 @@ document.addEventListener('DOMContentLoaded', function() {
   const successDiv = document.getElementById('success');
   const deviceIpSpan = document.getElementById('device-ip');
 
+  // Validate required DOM elements
+  const requiredElements = [form, ssidSelect, passwordInput, togglePassBtn, refreshBtn, connectBtn, btnText, btnLoader, statusDiv, successDiv, deviceIpSpan];
+  if (requiredElements.some(el => !el)) {
+    console.error('[WiFi Setup] Missing required DOM elements');
+    return;
+  }
+
   // Scan for networks on load
   scanNetworks();
 

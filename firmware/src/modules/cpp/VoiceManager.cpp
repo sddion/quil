@@ -2,8 +2,7 @@
 #include "hal/h/I2S.h"
 
 static bool listening = false;
-static uint8_t audio_buffer[512];
-static size_t buffer_pos = 0;
+static float last_rms = 0.0f;
 
 void VoiceInit() {
   I2SInitMic();
@@ -13,7 +12,6 @@ void VoiceInit() {
 
 void VoiceStartListening() {
   listening = true;
-  buffer_pos = 0;
 }
 
 void VoiceStopListening() {
@@ -26,7 +24,20 @@ bool VoiceIsListening() {
 
 size_t VoiceReadBuffer(uint8_t* buf, size_t len) {
   if (!listening) return 0;
-  return I2SReadMic(buf, len);
+  
+  size_t bytesRead = I2SReadMic(buf, len);
+  
+  // Calculate RMS from the samples for wake detection
+  if (bytesRead >= 100) {
+    float sum = 0;
+    for (size_t i = 0; i < bytesRead - 1; i += 2) {
+      int16_t sample = (buf[i+1] << 8) | buf[i];
+      sum += (float)sample * sample;
+    }
+    last_rms = sqrt(sum / (bytesRead / 2));
+  }
+  
+  return bytesRead;
 }
 
 void VoicePlayResponse(const uint8_t* data, size_t len) {
@@ -34,11 +45,5 @@ void VoicePlayResponse(const uint8_t* data, size_t len) {
 }
 
 float VoiceGetRms() {
-  if (buffer_pos < 100) return 0.0f;
-  float sum = 0;
-  for (size_t i = 0; i < buffer_pos; i += 2) {
-    int16_t sample = (audio_buffer[i+1] << 8) | audio_buffer[i];
-    sum += sample * sample;
-  }
-  return sqrt(sum / (buffer_pos / 2));
+  return last_rms;
 }
