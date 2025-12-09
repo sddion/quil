@@ -12,7 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
-  Bluetooth,
+  Wifi,
   Settings,
   RefreshCw,
   CheckCircle,
@@ -25,9 +25,9 @@ const ONBOARDING_KEY = '@quil_onboarding_completed';
 
 const slides = [
   {
-    icon: Bluetooth,
-    title: 'Connect via Bluetooth',
-    description: 'Scan and connect to your Quil robot using Bluetooth Low Energy.',
+    icon: Wifi,
+    title: 'Connect via WiFi',
+    description: 'Connect to your Quil robot over your local network.',
     color: '#00bfff',
   },
   {

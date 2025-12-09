@@ -1,11 +1,10 @@
 # Quil Mobile App
 
-React Native (Expo) app for configuring the Quil robot via Bluetooth Low Energy
-(BLE).
+React Native (Expo) app for configuring the Quil robot via WiFi.
 
 ## Purpose
 
-This app connects to Quil over BLE to:
+This app connects to Quil over WiFi to:
 
 - Configure WiFi credentials
 - Set timezone and location
@@ -22,7 +21,6 @@ This app is for configuration only.
 - **Routing:** expo-router (file-based)
 - **State:** @tanstack/react-query, React Context
 - **Storage:** @react-native-async-storage
-- **BLE:** Web Bluetooth API
 
 ## Structure
 
@@ -34,9 +32,9 @@ app/
 │   ├── devices.tsx    # Device management
 │   └── settings.tsx   # App settings
 ├── components/        # Reusable UI components
-├── contexts/          # React contexts (BLE, Settings)
-├── hooks/             # Custom hooks (useBLE)
-└── lib/               # Utilities (ble-manager)
+├── contexts/          # React contexts (Settings)
+├── hooks/             # Custom hooks (useDevice)
+└── lib/               # Utilities (device-manager)
 ```
 
 ## Setup
@@ -49,13 +47,12 @@ bun install
 bun start
 ```
 
-## BLE Protocol
+## WiFi Protocol
 
-| UUID              | Purpose              |
-| ----------------- | -------------------- |
-| `4fafc201-...`    | Quil Service         |
-| `beb5483e-...-a8` | Config (Write)       |
-| `beb5483e-...-a9` | Status (Read/Notify) |
+The app communicates with Quil over HTTP:
+
+- `GET /api/status` - Get device status
+- `POST /api/config` - Send configuration
 
 ### Config JSON (App → Device)
 

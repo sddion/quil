@@ -2,7 +2,7 @@
   "expo": {
     "name": "Quil",
     "slug": "quil",
-    "version": "1.0.2",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/AppIcons/playstore.png",
     "scheme": "quil-app",
@@ -27,14 +27,10 @@
       "permissions": [
         "android.permission.VIBRATE",
         "android.permission.INTERNET",
-        "android.permission.REQUEST_INSTALL_PACKAGES",
-        "android.permission.BLUETOOTH_SCAN",
-        "android.permission.BLUETOOTH_CONNECT",
-        "android.permission.BLUETOOTH",
-        "android.permission.BLUETOOTH_ADMIN",
-        "android.permission.ACCESS_FINE_LOCATION"
+        "android.permission.REQUEST_INSTALL_PACKAGES"
       ],
-      "softwareKeyboardLayoutMode": "pan"
+      "softwareKeyboardLayoutMode": "pan",
+      "usesCleartextTraffic": true
     },
     "plugins": [
       [
@@ -55,14 +51,7 @@
           }
         }
       ],
-      "expo-font",
-      [
-        "react-native-ble-plx",
-        {
-          "isBackgroundEnabled": false,
-          "neverForLocation": false
-        }
-      ]
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true

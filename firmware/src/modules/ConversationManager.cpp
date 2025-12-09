@@ -1,7 +1,7 @@
-#include "../h/ConversationManager.h"
-#include "../h/AnimationManager.h"
+#include "ConversationManager.h"
+#include "AnimationManager.h"
 #include "hal/h/Display.h"
-#include "modules/h/VoiceManager.h"
+#include "Audio.h"
 
 static ConversationState_t convState = CONV_STATE_IDLE;
 static bool isMuted = false;
@@ -22,7 +22,7 @@ void ConversationStart() {
   conversationStartTime = millis();
   
   // Start listening for voice input
-  VoiceStartListening();
+  AudioStartListening();
   
   // Play conversation animation
   AnimPlay(ANIM_CONVERSATION);
@@ -34,7 +34,7 @@ void ConversationEnd() {
   convState = CONV_STATE_IDLE;
   
   // Stop voice processing
-  VoiceStopListening();
+  AudioStopListening();
   
   // Stop animation
   AnimStop();
@@ -46,13 +46,13 @@ void ConversationLoop() {
   if (convState == CONV_STATE_IDLE) return;
   
   // Update activity timer when there's voice activity
-  if (VoiceIsListening() || convState == CONV_STATE_SPEAKING) {
+  if (AudioIsListening() || convState == CONV_STATE_SPEAKING) {
     lastActivityTime = millis();
   }
   
   // Handle mute state
-  if (isMuted && VoiceIsListening()) {
-    VoiceStopListening();
+  if (isMuted && AudioIsListening()) {
+    AudioStopListening();
   }
 }
 
@@ -122,9 +122,9 @@ void ConversationToggleMute() {
   Serial.printf("[Conversation] Mute: %s\n", isMuted ? "ON" : "OFF");
   
   if (isMuted) {
-    VoiceStopListening();
+    AudioStopListening();
   } else if (convState == CONV_STATE_LISTENING || convState == CONV_STATE_WAITING) {
-    VoiceStartListening();
+    AudioStartListening();
   }
 }
 

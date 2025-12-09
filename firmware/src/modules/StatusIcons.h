@@ -6,8 +6,6 @@
 #define BATTERY_ICON_HEIGHT 16
 #define WIFI_ICON_WIDTH 19
 #define WIFI_ICON_HEIGHT 16
-#define BLUETOOTH_ICON_WIDTH 14
-#define BLUETOOTH_ICON_HEIGHT 16
 #define WEATHER_ICON_MAX_WIDTH 34
 #define WEATHER_ICON_MAX_HEIGHT 26
 
@@ -21,5 +19,4 @@
 
 void StatusIconsDrawBattery(int16_t x, int16_t y, uint8_t percentage);
 void StatusIconsDrawWifi(int16_t x, int16_t y, int rssi);
-void StatusIconsDrawBluetooth(int16_t x, int16_t y, bool connected);
 void StatusIconsDrawWeather(int16_t x, int16_t y, uint8_t weatherCode);

@@ -1,4 +1,4 @@
-#include "../h/BatteryManager.h"
+#include "BatteryManager.h"
 
 static float battery_voltage = 0.0;
 static uint8_t battery_percentage = 100;

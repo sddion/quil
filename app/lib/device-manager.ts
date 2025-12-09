@@ -2,6 +2,7 @@
  * Quil Device Manager - HTTP-based device communication
  * Connects to Quil device over WiFi instead of Bluetooth
  */
+import * as Network from 'expo-network';
 
 export type DeviceStatus = {
   battery: number;
@@ -26,7 +27,7 @@ export type DeviceConfig = {
 export type ConnectionState = 'disconnected' | 'scanning' | 'connecting' | 'connected';
 
 const DEFAULT_DEVICE_IP = 'quil.local';
-const API_TIMEOUT = 5000;
+const API_TIMEOUT = 3000; // Reduced timeout for faster scanning
 
 class DeviceManager {
   private deviceIp: string | null = null;
@@ -36,34 +37,90 @@ class DeviceManager {
 
   /**
    * Discover device on local network
-   * Tries mDNS first, then falls back to common IPs
+   * Tries mDNS first, then common IPs, then performs a subnet scan
    */
   async discoverDevice(): Promise<string | null> {
     console.log('[Device] Discovering device on network...');
     
-    // Try mDNS hostname first
-    const hostnames = [
+    // 1. Try mDNS hostname and common defaults first (fastest)
+    const priorityHostnames = [
       'quil.local',
-      '192.168.1.1', // Common router IP range
       '192.168.4.1', // ESP32 AP default
     ];
 
-    for (const host of hostnames) {
-      try {
-        const response = await this.fetchWithTimeout(`http://${host}/api/status`, {
-          method: 'GET',
-        });
-        if (response.ok) {
-          console.log(`[Device] Found device at ${host}`);
-          return host;
-        }
-      } catch {
-        // Continue to next hostname
+    for (const host of priorityHostnames) {
+      if (await this.checkDevice(host)) {
+        return host;
       }
+    }
+
+    // 2. Perform subnet scan
+    console.log('[Device] Performing subnet scan...');
+    try {
+      const ip = await Network.getIpAddressAsync();
+      if (!ip || ip === '0.0.0.0') {
+        console.log('[Device] Could not determine local IP');
+        return null;
+      }
+
+      console.log(`[Device] Local IP: ${ip}`);
+      const subnet = ip.substring(0, ip.lastIndexOf('.'));
+      
+      // Create batches of IPs to scan to avoid overwhelming the network/thread
+      const BATCH_SIZE = 20;
+      const foundDevice = await this.scanSubnet(subnet, BATCH_SIZE);
+      
+      if (foundDevice) {
+        return foundDevice;
+      }
+
+    } catch (e) {
+      console.error('[Device] Subnet scan failed:', e);
     }
 
     console.log('[Device] Device not found on network');
     return null;
+  }
+
+  private async scanSubnet(subnet: string, batchSize: number): Promise<string | null> {
+    for (let i = 1; i < 255; i += batchSize) {
+      const batch: Promise<string | null>[] = [];
+      for (let j = 0; j < batchSize && (i + j) < 255; j++) {
+        const host = `${subnet}.${i + j}`;
+        batch.push(this.checkDevice(host).then(found => found ? host : null));
+      }
+
+      const results = await Promise.all(batch);
+      const found = results.find(ip => ip !== null);
+      if (found) {
+        console.log(`[Device] Found device at ${found}`);
+        return found;
+      }
+    }
+    return null;
+  }
+
+  private async checkDevice(host: string): Promise<boolean> {
+    try {
+      // Use efficient timeout for check
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 1500);
+
+      const response = await fetch(`http://${host}/api/status`, {
+        method: 'GET',
+        signal: controller.signal,
+      }).catch(() => null);
+
+      clearTimeout(timeout);
+
+      if (response && response.ok) {
+        console.log(`[Device] Found device at ${host}`);
+        return true;
+      }
+    } catch {
+      // Ignore errors
+    }
+    return false;
   }
 
   /**
@@ -92,7 +149,7 @@ class DeviceManager {
         return true;
       }
     } catch (error) {
-      console.error('[Device] Connection failed:', error);
+      console.error(`[Device] Connection failed to ${targetIp}:`, error);
     }
 
     return false;

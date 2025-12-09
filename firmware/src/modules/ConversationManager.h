@@ -3,7 +3,7 @@
 #include <Arduino.h>
 
 // Conversation timeout in milliseconds (return to clock after silence)
-#define CONVERSATION_TIMEOUT_MS 15000  // 15 seconds
+#define CONVERSATION_TIMEOUT_MS 60000  // 60 seconds
 
 // Conversation states
 typedef enum {

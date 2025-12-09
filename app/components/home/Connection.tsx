@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, TextInput } from 'react-native';
 import {
-  Wifi,
   WifiOff,
   Search,
   AlertTriangle,
@@ -27,7 +26,6 @@ export function Connection({
   isConnected,
   onConnect,
   onDisconnect,
-  onDiscover,
 }: ConnectionProps) {
   const [manualIp, setManualIp] = React.useState('');
 
@@ -43,7 +41,7 @@ export function Connection({
             <ActivityIndicator size="small" color="#00bfff" />
           )}
           {connectionState === 'scanning' && (
-            <Search size={24} color="#00bfff" />
+            <ActivityIndicator size="small" color="#00bfff" />
           )}
           {connectionState === 'disconnected' && (
             <WifiOff size={24} color="#666" />
@@ -52,7 +50,7 @@ export function Connection({
             <Text style={styles.connectionStatus}>
               {connectionState === 'connected' && 'Connected via WiFi'}
               {connectionState === 'connecting' && 'Connecting...'}
-              {connectionState === 'scanning' && 'Scanning network...'}
+              {connectionState === 'scanning' && 'Scanning local network...'}
               {connectionState === 'disconnected' && 'Disconnected'}
             </Text>
             {deviceIp && (
@@ -77,36 +75,26 @@ export function Connection({
         )}
 
         {!isConnected && connectionState !== 'scanning' && connectionState !== 'connecting' && (
-          <>
+          <View style={{ marginTop: 4 }}>
+            <Text style={[styles.deviceListTitle, { marginBottom: 8 }]}>Enter Device IP Address:</Text>
+            <TextInput
+              style={[styles.input, { color: '#fff', height: 40, paddingVertical: 8 }]}
+              placeholder="192.168.x.x"
+              placeholderTextColor="#666"
+              value={manualIp}
+              onChangeText={setManualIp}
+              keyboardType="numeric"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
             <TouchableOpacity
-              style={styles.scanButton}
-              onPress={() => onConnect()}
+              style={[styles.scanButton, { marginTop: 8 }]}
+              onPress={() => onConnect(manualIp.trim())}
+              disabled={!manualIp.trim()}
             >
-              <Wifi size={20} color="#00bfff" />
-              <Text style={styles.scanButtonText}>Find Quil on Network</Text>
+              <Text style={styles.scanButtonText}>Connect</Text>
             </TouchableOpacity>
-
-            <View style={{ marginTop: 12 }}>
-              <Text style={[styles.deviceListTitle, { marginBottom: 8 }]}>Or enter IP manually:</Text>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <TextInput
-                  style={[styles.input, { flex: 1, color: '#fff' }]}
-                  placeholder="192.168.1.x"
-                  placeholderTextColor="#666"
-                  value={manualIp}
-                  onChangeText={setManualIp}
-                  keyboardType="numeric"
-                />
-                <TouchableOpacity
-                  style={[styles.scanButton, { flex: 0, paddingHorizontal: 16 }]}
-                  onPress={() => onConnect(manualIp)}
-                  disabled={!manualIp}
-                >
-                  <Text style={styles.scanButtonText}>Connect</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </>
+          </View>
         )}
       </View>
     </View>

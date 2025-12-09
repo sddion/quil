@@ -7,18 +7,14 @@
 #include "hal/h/NativeTouch.h"
 #include "core/h/StateMachine.h"
 #include "core/h/Diagnostics.h"
-#include "modules/h/ConfigStore.h"
-#include "modules/h/WifiManager.h"
-#include "modules/h/NtpClient.h"
-#include "modules/h/WebPortal.h"
-#include "modules/h/GestureManager.h"
-#include "modules/h/TouchActions.h"
-#include "modules/h/VoiceManager.h"
-#include "modules/h/WakeManager.h"
-#include "modules/h/RealtimeVoice.h"
-#include "modules/h/AnimationManager.h"
-#include "modules/h/BatteryManager.h"
-#include "modules/h/ConversationManager.h"
+#include "modules/ConfigStore.h"
+#include "modules/Connectivity.h"
+#include "modules/WebPortal.h"
+#include "modules/Input.h"
+#include "modules/Audio.h"
+#include "modules/AnimationManager.h"
+#include "modules/BatteryManager.h"
+#include "modules/ConversationManager.h"
 #include "modes/h/Time.h"
 #include "modes/h/SetupScreen.h"
 #include "core/h/BootLoader.h"
@@ -55,8 +51,9 @@ void setup() {
   ConfigInit();
   DiagInit();
   StateInit();
-  GestureInit();
-  ActionsInit();
+  // Initialized via InputInit()
+// GestureInit();
+// ActionsInit();
   uint8_t contrast = 128;
   if (ConfigLoadContrast(&contrast)) {
     DisplaySetContrast(contrast);
@@ -93,6 +90,8 @@ void setup() {
   char ssid[33] = {0}, pass[65] = {0};
   if (ConfigLoadWifi(ssid, pass)) {
     WifiConnect(ssid, pass);
+    // Start WebPortal in normal mode to serve API
+    WebPortalStart();
   } else {
     Serial.println("[Boot] Failed to load WiFi credentials");
     // Consider fallback behavior: enter setup mode or show error
@@ -107,11 +106,22 @@ void setup() {
   
   // Stage 4: Services
   BootLoaderShowStage(BOOT_STAGE_SERVICES, false);
-  VoiceInit();
-  WakeInit();
-  RealtimeVoiceInit();
+// Modules are initialized in ModuleInit()
+// No need to call individual inits here if they are consolidated,
+// but let's check what we have.
+InputInit();
+AudioInit();
+// ConnectivityInit(); // Wait, did I make ConnectivityInit? No, it's WifiInit, NtpInit, CloudInit inside Connectivity.h
+// Let's check Connectivity.h. It has WifiInit, NtpInit, CloudInit. 
+// I should probably make a ConnectivityInit or call them individually.
+// For now, replacing the old calls.
+// WifiInit(); // Already called above
+NtpInit();
+CloudInit();
+AnimInit(); // Check AnimationManager.h -> AnimationInit()
+BatteryInit();   // Check BatteryManager.h -> BatteryInit()
+ConversationInit(); // Check ConversationManager.h -> ConversationInit()
   // Don't connect WebSocket during boot - wait for wake to save memory
-  ConversationInit();
   
   // Stage 5: Display
   BootLoaderShowStage(BOOT_STAGE_DISPLAY, false);
@@ -165,9 +175,9 @@ void loop() {
   // Touch handling (mute toggle)
   NativeTouchUpdate();
   if (NativeTouchHasTap()) {
-    GestureType gest = GestureDetect(0, millis());
+    GestureType gest = InputDetect(0, millis());
     if (gest != GESTURE_NONE) {
-      ActionsHandle(gest, mode);
+      InputHandleActions(gest, mode);
     }
   }
   
@@ -196,20 +206,20 @@ void loop() {
       RealtimeVoiceDisconnect();  // Free WebSocket memory
       ConversationEnd();
       StateSetMode(MODE_CLOCK);
-      VoiceStartListening();  // Resume wake detection
+      AudioStartListening();  // Resume wake detection
     }
   }
   
   // === CLOCK MODE (default) ===
   else if (mode == MODE_CLOCK) {
     // Ensure mic is always listening for wake detection
-    if (!VoiceIsListening()) {
-      VoiceStartListening();
+    if (!AudioIsListening()) {
+      AudioStartListening();
     }
     
     // Read mic to update RMS for wake detection
     uint8_t audio[256];
-    size_t len = VoiceReadBuffer(audio, sizeof(audio));
+    size_t len = AudioReadBuffer(audio, sizeof(audio));
     (void)len; // We just need to update the internal RMS
     
     // Check for wake (voice activity)

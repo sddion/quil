@@ -1,7 +1,7 @@
-#include "../h/WebPortal.h"
-#include "../h/WifiManager.h"
-#include "../h/ConfigStore.h"
-#include "../h/BatteryManager.h"
+#include "WebPortal.h"
+#include "Connectivity.h"
+#include "ConfigStore.h"
+#include "BatteryManager.h"
 #include "hal/h/Display.h"
 #include "modes/h/Time.h"
 #include "config.h"
@@ -67,14 +67,20 @@ void WebPortalStart() {
     }
   }
   
-  // Start DNS server for captive portal
-  dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
-  Serial.println("[WebPortal] DNS server started");
+  // Start DNS server for captive portal if in AP mode
+  if (WiFi.getMode() == WIFI_AP || WiFi.getMode() == WIFI_AP_STA) {
+    dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
+    Serial.println("[WebPortal] DNS server started");
+  }
   
   // Serve static files from LittleFS
   server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
   
   // API endpoints
+  DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
+  DefaultHeaders::Instance().addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  DefaultHeaders::Instance().addHeader("Access-Control-Allow-Headers", "Content-Type");
+  
   server.on("/api/scan", HTTP_GET, handleScan);
   
   server.on("/api/connect", HTTP_POST, 
@@ -108,7 +114,7 @@ void WebPortalStart() {
         }
         
         // Handle command
-        if (doc.containsKey("cmd")) {
+        if (doc["cmd"].is<const char*>()) {
           const char* cmd = doc["cmd"];
           if (strcmp(cmd, "restart") == 0) {
             request->send(200, "application/json", "{\"success\":true}");
@@ -124,33 +130,33 @@ void WebPortalStart() {
         }
         
         // Apply config values
-        if (doc.containsKey("tz")) {
+        if (doc["tz"].is<int>()) {
           int tz = doc["tz"];
           ConfigSaveTimezone(tz);
           Serial.printf("[WebPortal] Timezone saved: %d\n", tz);
         }
         
-        if (doc.containsKey("brightness")) {
+        if (doc["brightness"].is<uint8_t>()) {
           uint8_t brightness = doc["brightness"];
           ConfigSaveContrast(brightness);
           DisplaySetContrast(brightness);
           Serial.printf("[WebPortal] Brightness saved: %d\n", brightness);
         }
         
-        if (doc.containsKey("theme")) {
+        if (doc["theme"].is<uint8_t>()) {
           uint8_t theme = doc["theme"];
           TimeSetTheme((DisplayTheme_t)theme);
           Serial.printf("[WebPortal] Theme saved: %d\n", theme);
         }
         
-        if (doc.containsKey("ssid") && doc.containsKey("password")) {
+        if (doc["ssid"].is<const char*>() && doc["password"].is<const char*>()) {
           const char* ssid = doc["ssid"];
           const char* pass = doc["password"];
           ConfigSaveWifi(ssid, pass);
           Serial.println("[WebPortal] WiFi config saved");
         }
         
-        if (doc.containsKey("wk") && doc.containsKey("wl")) {
+        if (doc["wk"].is<const char*>() && doc["wl"].is<const char*>()) {
           const char* wk = doc["wk"];
           const char* wl = doc["wl"];
           ConfigSaveWeather(wk, wl);
@@ -179,7 +185,11 @@ void WebPortalStart() {
   portalActive = true;
   
   Serial.println("[WebPortal] Web server started");
-  Serial.printf("[WebPortal] Portal URL: http://%s\n", WiFi.softAPIP().toString().c_str());
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.printf("[WebPortal] Web Server URL: http://%s\n", WiFi.localIP().toString().c_str());
+  } else {
+    Serial.printf("[WebPortal] Portal URL: http://%s\n", WiFi.softAPIP().toString().c_str());
+  }
 }
 
 void WebPortalStop() {

@@ -2625,3 +2625,16 @@ const unsigned char conversation_000 [] PROGMEM = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
+
+
+// Frame array
+const unsigned char* const conversation_frames[] PROGMEM = {
+  conversation_000, conversation_001, conversation_002, conversation_003, conversation_004,
+  conversation_005, conversation_006, conversation_007, conversation_008, conversation_009,
+  conversation_010, conversation_011, conversation_012, conversation_013, conversation_014,
+  conversation_015, conversation_016, conversation_017, conversation_018, conversation_019,
+  conversation_020, conversation_021, conversation_022, conversation_023, conversation_024,
+  conversation_025, conversation_026, conversation_027, conversation_028, conversation_029,
+  conversation_030, conversation_031, conversation_032, conversation_033, conversation_034,
+  conversation_035, conversation_036, conversation_037, conversation_038
+};

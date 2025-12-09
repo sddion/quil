@@ -1,9 +1,9 @@
 #include "../h/Chat.h"
 #include "hal/h/Display.h"
-#include "../../modules/h/VoiceManager.h"
+#include "../../modules/Audio.h"
 
 void ChatInit() {
-  VoiceInit();
+  AudioInit();
 }
 
 void ChatUpdate() {}
@@ -11,23 +11,23 @@ void ChatUpdate() {}
 void ChatRender() {
   DisplayClear();
   DisplayText("CHAT", 45, 10);
-  bool active = VoiceIsListening();
+  bool active = AudioIsListening();
   DisplayText(active ? "Listening..." : "Idle", 30, 30);
   DisplayUpdate();
 }
 
 void ChatStartListen() {
-  VoiceStartListening();
+  AudioStartListening();
 }
 
 void ChatStopListen() {
-  VoiceStopListening();
+  AudioStopListening();
 }
 
 void ChatToggleMute() {
-  if (VoiceIsListening()) {
-    VoiceStopListening();
+  if (AudioIsListening()) {
+    AudioStopListening();
   } else {
-    VoiceStartListening();
+    AudioStartListening();
   }
 }

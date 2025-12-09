@@ -1,4 +1,4 @@
-#include "../h/WeatherManager.h"
+#include "WeatherManager.h"
 #include <WiFiClient.h>
 #include <ArduinoJson.h>
 

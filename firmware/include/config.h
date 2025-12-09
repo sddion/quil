@@ -44,11 +44,11 @@
 #define I2S_SPK_DOUT 32
 
 // Firmware version
-#define FIRMWARE_VERSION "1.0.2"
+#define FIRMWARE_VERSION "1.1.0"
 
 // OTA GitHub configuration
 #define GITHUB_USER "sddion"
 #define GITHUB_REPO "quil"
 
 // Quil Server
-#define QUIL_SERVER_URL "wss://quil.deno.dev/ws"
+#define QUIL_SERVER_URL "wss://quil-v6m7yqzgeggr.deno.dev/ws"

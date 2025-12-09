@@ -1,12 +1,12 @@
 #include "../h/Time.h"
 #include "config.h"
 #include "hal/h/Display.h"
-#include "modules/h/NtpClient.h"
-#include "modules/h/ConfigStore.h"
-#include "modules/h/WeatherManager.h"
-#include "modules/h/BatteryManager.h"
-#include "modules/h/StatusIcons.h"
-#include "modules/h/WifiManager.h"
+#include "modules/Connectivity.h"
+#include "modules/ConfigStore.h"
+#include "modules/WeatherManager.h"
+#include "modules/BatteryManager.h"
+#include "modules/StatusIcons.h"
+
 #include <Adafruit_GFX.h>
 
 #include "assets/fonts/Org_01.h"
@@ -76,7 +76,6 @@ void TimeRenderElaborate() {
   uint8_t batteryPct = BatteryGetPercentage();
   int rssi = WifiGetRssi();
   bool wifiConnected = WifiIsConnected();
-  bool btConnected = false;  // BLE removed
   
   // Use actual weather data
   uint8_t weatherCode = GetWeatherCode(weatherData.condition);
@@ -85,7 +84,7 @@ void TimeRenderElaborate() {
   const char* condStr = weatherData.success ? weatherData.condition.c_str() : "--";
   
   DefaultThemeRender(hour, minute, dateStr.c_str(), dayStr.c_str(), 
-                    batteryPct, rssi, wifiConnected, btConnected,
+                    batteryPct, rssi, wifiConnected,
                     weatherCode, tempStr, condStr);
 }
 
@@ -99,7 +98,6 @@ void TimeRenderCompact() {
   uint8_t batteryPct = BatteryGetPercentage();
   int rssi = WifiGetRssi();
   bool wifiConnected = WifiIsConnected();
-  bool btConnected = false;  // BLE removed
   
   // Use actual weather data
   uint8_t weatherCode = GetWeatherCode(weatherData.condition);
@@ -108,7 +106,7 @@ void TimeRenderCompact() {
   const char* condStr = weatherData.success ? weatherData.condition.c_str() : "--";
   
   CompactThemeRender(hour, minute, dateStr.c_str(), dayStr.c_str(), 
-                    batteryPct, rssi, wifiConnected, btConnected,
+                    batteryPct, rssi, wifiConnected,
                     weatherCode, tempStr, condStr);
 }
 

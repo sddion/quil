@@ -1,8 +1,23 @@
-#include "../h/WifiManager.h"
-#include "../h/ConfigStore.h"
-#include "config.h"
+#include "Connectivity.h"
+#include "ConfigStore.h" // Will be moved later, but include path needs to be resolved
+#include "config.h" // Root include 
+// We need to be careful with paths. Original was ../h/ConfigStore.h. 
+// If we move everything to src/modules/, then "ConfigStore.h" will work if it's there.
+// For now, I will assume I'm moving ConfigStore too, or I'll fix includes later.
+// Let's use internal relative paths assuming flat structure or correct relative for now.
+// Since ConfigStore is not yet moved, it's still in modules/h/ConfigStore.h relative to modules/Connectivity.cpp
+// But wait, I'm writing to src/modules/Connectivity.cpp.
+// So relative path to src/modules/h/ConfigStore.h would be "h/ConfigStore.h"? No, I'm finding it hard to predict without moving everything.
+// Best strategy: Use "ConfigStore.h" and ensure I move ConfigStore.h to src/modules/ as well.
+
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <WiFiUdp.h>
+#include <NTPClient.h>
+
+// =======================
+// WiFi Manager Implementation
+// =======================
 
 // WiFi state tracking
 static bool wifi_connected = false;
@@ -35,13 +50,11 @@ bool WifiConnect(const char* ssid, const char* pass) {
     return false;
   }
   
-  // Save credentials for reconnection
   strncpy(saved_ssid, ssid, sizeof(saved_ssid) - 1);
   strncpy(saved_pass, pass, sizeof(saved_pass) - 1);
   saved_ssid[sizeof(saved_ssid) - 1] = '\0';
   saved_pass[sizeof(saved_pass) - 1] = '\0';
   
-  // Save to EEPROM
   ConfigSaveWifi(saved_ssid, saved_pass);
   
   Serial.print("[WiFi] Connecting to: ");
@@ -49,8 +62,6 @@ bool WifiConnect(const char* ssid, const char* pass) {
   
   WiFi.mode(WIFI_STA);
   WiFi.setAutoReconnect(true);
-  
-
   
   WiFi.begin(ssid, pass);
   
@@ -70,7 +81,6 @@ bool WifiConnect(const char* ssid, const char* pass) {
     Serial.print("[WiFi] Connected! IP: ");
     Serial.println(WiFi.localIP());
     
-    // Check internet connectivity
     internet_connected = WifiCheckInternet();
     if (internet_connected) {
       Serial.println("[WiFi] Internet access confirmed");
@@ -120,7 +130,6 @@ bool WifiCheckInternet() {
   WiFiClient client;
   HTTPClient http;
   
-  // Use Google's captive portal check endpoint
   http.begin(client, "http://clients3.google.com/generate_204");
   http.setTimeout(5000);
   
@@ -131,21 +140,18 @@ bool WifiCheckInternet() {
 }
 
 void WifiReconnectTask() {
-  // Don't run reconnection in AP mode
   if (ap_mode) {
     return;
   }
   
   unsigned long now = millis();
   
-  // Check WiFi and internet status periodically
   if (now - last_wifi_check > WIFI_CHECK_INTERVAL) {
     last_wifi_check = now;
     
     bool wifi_ok = (WiFi.status() == WL_CONNECTED);
     bool inet_ok = wifi_ok && WifiCheckInternet();
     
-    // Detect WiFi/Internet loss
     if (!wifi_ok || !inet_ok) {
       if (wifi_connected || internet_connected) {
         Serial.println("[WiFi] Connection/Internet lost!");
@@ -153,7 +159,6 @@ void WifiReconnectTask() {
         internet_connected = inet_ok;
       }
       
-      // Attempt reconnection if enough time has passed
       if (now - last_reconnect_attempt > RECONNECT_INTERVAL) {
         last_reconnect_attempt = now;
         
@@ -165,7 +170,6 @@ void WifiReconnectTask() {
         }
       }
     }
-    // Detect WiFi/Internet restoration
     else if (!wifi_connected || !internet_connected) {
       Serial.println("[WiFi] Connection/Internet restored!");
       Serial.print("[WiFi] IP: ");
@@ -223,20 +227,18 @@ bool WifiHasSavedCredentials() {
 
 // ============ Portal Mode Functions ============
 
-#include "../h/WebPortal.h"
+#include "WebPortal.h" // Expecting this to be moved to src/modules/WebPortal.h
 
 static bool portal_mode = false;
 
 bool WifiStartPortal() {
   Serial.println("[WiFi] Starting configuration portal...");
   
-  // Start AP mode first
   if (!WifiStartAp()) {
     Serial.println("[WiFi] Failed to start AP for portal");
     return false;
   }
   
-  // Initialize and start web portal
   if (!WebPortalInit()) {
     Serial.println("[WiFi] Failed to init web portal");
     WiFi.softAPdisconnect(true);
@@ -267,34 +269,120 @@ bool WifiIsPortalMode() {
 }
 
 static unsigned long portal_connected_time = 0;
-static const unsigned long PORTAL_STOP_DELAY = 3000; // 3 seconds after connection
+static const unsigned long PORTAL_STOP_DELAY = 3000; 
 
 void WifiPortalLoop() {
   if (!portal_mode) return;
   
   WebPortalLoop();
   
-  // Check if we got connected through the portal
   if (WiFi.status() == WL_CONNECTED && wifi_connected == false) {
     Serial.println("[WiFi] Connected via portal!");
     Serial.print("[WiFi] IP: ");
     Serial.println(WiFi.localIP());
     
-    // Note: Credentials already saved by WebPortal when user submitted form
-    // No need to save again here
-    
     wifi_connected = true;
-    ap_mode = false;  // Clear AP mode flag
+    ap_mode = false; 
     internet_connected = WifiCheckInternet();
     portal_connected_time = millis();
   }
-  
-  // Auto-stop portal after brief delay (so user sees success message)
-  if (wifi_connected && portal_connected_time > 0) {
-    if (millis() - portal_connected_time >= PORTAL_STOP_DELAY) {
-      Serial.println("[WiFi] Auto-stopping portal after connection");
-      WifiStopPortal();
-      portal_connected_time = 0;
-    }
+}
+
+// =======================
+// NTP Client Implementation
+// =======================
+
+static WiFiUDP ntpUDP;
+static NTPClient timeClient(ntpUDP, NTP_SERVER, NTP_OFFSET_SEC, 60000);
+static bool synced = false;
+static int current_offset = NTP_OFFSET_SEC;
+
+void NtpInit() {
+  timeClient.begin();
+  timeClient.update();
+  synced = timeClient.isTimeSet();
+}
+
+void NtpUpdate() {
+  if (timeClient.update()) {
+    synced = true;
   }
+}
+
+void NtpSetTimezone(int offset_sec) {
+  current_offset = offset_sec;
+  timeClient.setTimeOffset(offset_sec);
+  timeClient.forceUpdate();
+}
+
+String NtpGetTime() {
+  if (!synced || !timeClient.isTimeSet()) return "--:--";
+  
+  int hr = timeClient.getHours();
+  int mn = timeClient.getMinutes();
+  
+  char buf[16];
+  snprintf(buf, sizeof(buf), "%02d:%02d", hr, mn);
+  return String(buf);
+}
+
+String NtpGetDate() {
+  if (!synced || !timeClient.isTimeSet()) return "----/--/--";
+  
+  time_t rawTime = timeClient.getEpochTime();
+  struct tm* tmInfo = localtime(&rawTime);
+  
+  char buf[32];
+  snprintf(buf, sizeof(buf), "%04d/%02d/%02d", 
+           tmInfo->tm_year + 1900, 
+           tmInfo->tm_mon + 1, 
+           tmInfo->tm_mday);
+  return String(buf);
+}
+
+String NtpGetDay() {
+  if (!synced || !timeClient.isTimeSet()) return "---";
+  
+  time_t rawTime = timeClient.getEpochTime();
+  struct tm* tmInfo = localtime(&rawTime);
+  
+  static const char* daynames[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+  return String(daynames[tmInfo->tm_wday]);
+}
+
+int NtpGetHour() {
+  if (!synced || !timeClient.isTimeSet()) return 0;
+  return timeClient.getHours();
+}
+
+int NtpGetMinute() {
+  if (!synced || !timeClient.isTimeSet()) return 0;
+  return timeClient.getMinutes();
+}
+
+int NtpGetSecond() {
+  if (!synced || !timeClient.isTimeSet()) return 0;
+  return timeClient.getSeconds();
+}
+
+bool NtpIsSynced() {
+  return synced && timeClient.isTimeSet();
+}
+
+// =======================
+// Cloud Sync Implementation
+// =======================
+
+static bool cloud_connected = false;
+
+void CloudInit() {
+  cloud_connected = false;
+}
+
+void CloudSyncPrefs() {}
+
+void CloudSyncLogs() {}
+
+bool CloudIsConnected() {
+  return cloud_connected;
 }

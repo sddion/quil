@@ -3,16 +3,15 @@
 #include "../assets/fonts/Org_01.h"
 
 void CompactThemeRender(int hour, int minute, const char* dateStr, const char* dayStr, 
-                       uint8_t batteryPct, int rssi, bool wifiConnected, bool btConnected,
+                       uint8_t batteryPct, int rssi, bool wifiConnected,
                        uint8_t weatherCode, const char* tempStr, const char* condStr) {
   Adafruit_SSD1306& display = DisplayGetDisplay();
   display.clearDisplay();
   
-  // WiFi + Bluetooth at top left
+  // WiFi at top left
   if (wifiConnected) {
     StatusIconsDrawWifi(2, 2, rssi);
   }
-  StatusIconsDrawBluetooth(33, 2, btConnected);
   
   // Battery at top right
   if (BatteryIsConnected()) {

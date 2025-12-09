@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { Battery, Wifi, PackageCheck } from 'lucide-react-native';
-import type { DeviceStatus } from '@/lib/ble-manager';
+import type { DeviceStatus } from '@/lib/device-manager';
 import { homeStyles as styles } from '@/styles/index';
 
 export interface DeviceStatusProps {

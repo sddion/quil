@@ -3,7 +3,7 @@
 #include "assets/fonts/Org_01.h"
 
 void DefaultThemeRender(int hour, int minute, const char* dateStr, const char* dayStr, 
-                       uint8_t batteryPct, int rssi, bool wifiConnected, bool btConnected,
+                       uint8_t batteryPct, int rssi, bool wifiConnected,
                        uint8_t weatherCode, const char* tempStr, const char* condStr) {
   Adafruit_SSD1306& display = DisplayGetDisplay();
   display.clearDisplay();
@@ -12,9 +12,8 @@ void DefaultThemeRender(int hour, int minute, const char* dateStr, const char* d
   if (wifiConnected) {
     StatusIconsDrawWifi(4, 1, rssi);
   }
-  StatusIconsDrawBluetooth(27, 1, btConnected);
   if (BatteryIsConnected()) {
-    StatusIconsDrawBattery(48, 1, batteryPct);
+    StatusIconsDrawBattery(32, 1, batteryPct);
   }
   
   StatusIconsDrawWeather(108, 1, weatherCode);

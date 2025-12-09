@@ -1,4 +1,4 @@
-#include "../h/ConfigStore.h"
+#include "ConfigStore.h"
 #include "config.h"
 
 #include <Preferences.h>

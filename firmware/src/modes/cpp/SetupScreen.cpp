@@ -1,7 +1,6 @@
 #include "../h/SetupScreen.h"
 #include "hal/h/Display.h"
-#include "modules/h/WifiManager.h"
-#include "modules/h/NtpClient.h"
+#include "modules/Connectivity.h"
 #include <Adafruit_GFX.h>
 
 // Mode icon bitmap

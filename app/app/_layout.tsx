@@ -4,7 +4,6 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { BLEProvider } from "@/hooks/use-ble";
 import { SettingsProvider } from "@/contexts/settings";
 import { NotificationsProvider } from "@/contexts/notifications";
 import { UpdateProvider } from "@/utils/UpdateContext";
@@ -40,9 +39,7 @@ export default function RootLayout() {
         <UpdateProvider>
           <NotificationsProvider>
             <SettingsProvider>
-              <BLEProvider>
-                <RootLayoutNav />
-              </BLEProvider>
+              <RootLayoutNav />
             </SettingsProvider>
           </NotificationsProvider>
         </UpdateProvider>

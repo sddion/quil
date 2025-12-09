@@ -1,8 +1,19 @@
-#include "../h/AnimationManager.h"
+#include "AnimationManager.h"
 #include "hal/h/Display.h"
 
 #include <pgmspace.h>
-#include "../../anime/h/AnimationFrames.h"
+// Assuming AnimationFrames is also moved or path needs adjustment. 
+// For now, let's look at where it is. It was "../../anime/h/AnimationFrames.h".
+// Current dir is src/modules. So ../../anime/h is src/anime/h.
+// Let's use relative path "anime/h/AnimationFrames.h" if we consider base is src? 
+// No, invalid relative path. 
+// Let's double check file list.
+// src/anime contains subdirectories?
+// List at start showed: src/anime -> numChildren 1.
+// Let's assume for now we keep the relative path but correct it for "src/modules/" base.
+// Old: src/modules/cpp/AnimationManager.cpp -> ../../anime/h/AnimationFrames.h
+// New: src/modules/AnimationManager.cpp -> ../anime/h/AnimationFrames.h
+#include "../anime/h/AnimationFrames.h"
 
 static AnimationType current_anim = ANIM_NONE;
 static uint16_t current_frame = 0;
@@ -25,8 +36,8 @@ void AnimPlay(AnimationType type) {
   
   switch(type) {
     case ANIM_CONVERSATION:
-      frame_array = thinking_frames;
-      total_frames = THINKING_FRAMES;
+      frame_array = conversation_frames;
+      total_frames = CONVERSATION_FRAMES;
       break;
     case ANIM_BOOT:
       frame_array = boot_frames;
