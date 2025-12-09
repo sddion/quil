@@ -95,7 +95,9 @@ static int compareVersions(const char* v1, const char* v2) {
 
 static String fetchGithubRelease() {
   HTTPClient http;
-  String url = "https://api.github.com/repos/" + String(GITHUB_USER) + "/" + String(GITHUB_REPO) + "/releases/latest";
+  // Use static buffer to avoid heap allocation from String concatenation
+  static char url[128];
+  snprintf(url, sizeof(url), "https://api.github.com/repos/%s/%s/releases/latest", GITHUB_USER, GITHUB_REPO);
   
   http.begin(url);
   http.setTimeout(10000);

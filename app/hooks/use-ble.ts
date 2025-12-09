@@ -43,29 +43,6 @@ export const [BLEProvider, useBLE] = createContextHook(() => {
     try {
       setError(null);
       
-      // Check if Bluetooth is enabled, prompt to turn on if off
-      const isBluetoothOn = await bleManager.checkAndEnableBluetooth();
-      if (!isBluetoothOn) {
-        Alert.alert(
-          'Bluetooth Required',
-          'Bluetooth is turned off. Please enable Bluetooth to scan for devices.',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { 
-              text: 'Open Settings', 
-              onPress: () => {
-                if (Platform.OS === 'ios') {
-                  Linking.openURL('App-Prefs:Bluetooth');
-                } else {
-                  Linking.sendIntent('android.settings.BLUETOOTH_SETTINGS');
-                }
-              }
-            }
-          ]
-        );
-        return;
-      }
-      
       // Request permissions (handles both native and web)
       const hasPermission = await bleManager.requestPermissions();
       if (!hasPermission) {
@@ -76,9 +53,17 @@ export const [BLEProvider, useBLE] = createContextHook(() => {
       setConnectionState('scanning');
       setDevices([]);
       
-      await bleManager.startScan((foundDevices: BLEDevice[]) => {
-        setDevices(foundDevices);
-      });
+      await bleManager.startScan(
+        (foundDevices: BLEDevice[]) => {
+          setDevices(foundDevices);
+        },
+        (scanError: Error) => {
+          // Handle scan errors by updating UI state
+          console.error('[BLE Hook] Scan error callback:', scanError.message);
+          setError(scanError.message);
+          setConnectionState('disconnected');
+        }
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start scan');
       setConnectionState('disconnected');

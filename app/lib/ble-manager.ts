@@ -43,11 +43,11 @@ function base64Encode(str: string): string {
       String.fromCharCode(parseInt(p1, 16))
     );
     return btoa(encoded);
-  } catch (error) {
-    console.error('[BLE Manager] Failed to encode base64:', error);
-    throw new Error('Failed to encode base64 data');
+  } catch {
+    console.error('[BLE Manager] Base64 encoding failed for string:', str);
+    throw new Error('Failed to encode string to base64');
   }
-}
+}  
 
 class BLEManager {
   private nativeManager: NativeBleManager | null = null;
@@ -182,13 +182,25 @@ class BLEManager {
     return true;
   }
 
-  async startScan(callback: (devices: BLEDevice[]) => void): Promise<void> {
+  async startScan(
+    callback: (devices: BLEDevice[]) => void,
+    onScanError?: (error: Error) => void
+  ): Promise<void> {
     if (Platform.OS === 'web') {
       return this.startWebScan(callback);
     }
 
     if (!this.nativeManager) {
       throw new Error('BLE Manager not initialized');
+    }
+
+    // Check Bluetooth state before scanning
+    const isBluetoothReady = await this.checkAndEnableBluetooth();
+    if (!isBluetoothReady) {
+      const error = new Error('Bluetooth is not enabled. Please turn on Bluetooth and try again.');
+      console.error('[BLE Manager] Bluetooth not ready:', error.message);
+      if (onScanError) onScanError(error);
+      throw error;
     }
 
     this.scanning = true;
@@ -203,6 +215,9 @@ class BLEManager {
         if (error) {
           console.error('[BLE Manager] Scan error:', error);
           this.scanning = false;
+          if (onScanError) {
+            onScanError(error instanceof Error ? error : new Error(String(error)));
+          }
           return;
         }
 
@@ -271,6 +286,10 @@ class BLEManager {
     }
     
     console.log('[BLE Manager] Scan stopped');
+  }
+
+  isScanning(): boolean {
+    return this.scanning;
   }
 
   async connect(deviceId: string): Promise<void> {

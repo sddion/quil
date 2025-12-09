@@ -34,82 +34,136 @@ class ServerCallbacks: public BLEServerCallbacks {
 
 class ConfigCallbacks: public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic* pCharacteristic) {
-    String value = String(pCharacteristic->getValue().c_str());
-    if (value.length() > 0) {
+    // Use static buffer to avoid heap allocation in BLE callback context
+    static char valueBuf[512];
+    std::string stdValue = pCharacteristic->getValue();
+    size_t len = min(stdValue.length(), sizeof(valueBuf) - 1);
+    memcpy(valueBuf, stdValue.c_str(), len);
+    valueBuf[len] = '\0';
+    
+    if (len > 0) {
       Serial.println("[BLE] Received config:");
-      Serial.println(value);
+      Serial.println(valueBuf);
       
       // Parse JSON and apply config
       // Format: {"ssid":"...", "password":"...", "tz":19800, "wk":"...", "wl":"...", "brightness":128}
       // or command: {"cmd":"restart"} or {"cmd":"reset"}
       
-      if (value.indexOf("\"cmd\"") >= 0) {
+      if (strstr(valueBuf, "\"cmd\"") != nullptr) {
         // Handle command
-        if (value.indexOf("restart") >= 0) {
+        if (strstr(valueBuf, "restart") != nullptr) {
           Serial.println("[BLE] Restart command received");
           delay(500);
           ESP.restart();
-        } else if (value.indexOf("reset") >= 0) {
+        } else if (strstr(valueBuf, "reset") != nullptr) {
           Serial.println("[BLE] Factory reset command received");
           ConfigClear();
           delay(500);
           ESP.restart();
-        } else if (value.indexOf("sync_time") >= 0) {
+        } else if (strstr(valueBuf, "sync_time") != nullptr) {
           Serial.println("[BLE] Time sync requested");
           // NTP will handle this on next update cycle
         }
       } else {
-        // Parse config JSON (simplified parsing)
-        int ssidStart = value.indexOf("\"ssid\":\"") + 8;
-        int ssidEnd = value.indexOf("\"", ssidStart);
-        int passStart = value.indexOf("\"password\":\"") + 12;
-        int passEnd = value.indexOf("\"", passStart);
-        int tzStart = value.indexOf("\"tz\":") + 5;
-        int tzEnd = value.indexOf(",", tzStart);
-        if (tzEnd < 0) tzEnd = value.indexOf("}", tzStart);
-        int wkStart = value.indexOf("\"wk\":\"") + 6;
-        int wkEnd = value.indexOf("\"", wkStart);
-        int wlStart = value.indexOf("\"wl\":\"") + 6;
-        int wlEnd = value.indexOf("\"", wlStart);
-        int brStart = value.indexOf("\"brightness\":") + 13;
-        int brEnd = value.indexOf("}", brStart);
-        if (brEnd < 0) brEnd = value.indexOf(",", brStart);
+        // Parse config JSON using C-style string operations
+        static char ssid[64], pass[64], wk[64], wl[64];
+        int tz = 0;
+        uint8_t brightness = 128, theme = 0;
         
-        int themeStart = value.indexOf("\"theme\":") + 8;
-        int themeEnd = value.indexOf("}", themeStart);
-        if (themeEnd < 0) themeEnd = value.indexOf(",", themeStart);
+        // Parse ssid
+        char* p = strstr(valueBuf, "\"ssid\":\"");
+        if (p) {
+          p += 8;
+          char* end = strchr(p, '"');
+          if (end) {
+            size_t slen = min((size_t)(end - p), sizeof(ssid) - 1);
+            memcpy(ssid, p, slen);
+            ssid[slen] = '\0';
+          }
+        }
         
-        if (ssidStart > 7 && passStart > 11) {
-          String ssid = value.substring(ssidStart, ssidEnd);
-          String pass = value.substring(passStart, passEnd);
-          ConfigSaveWifi(ssid.c_str(), pass.c_str());
+        // Parse password
+        p = strstr(valueBuf, "\"password\":\"");
+        if (p) {
+          p += 12;
+          char* end = strchr(p, '"');
+          if (end) {
+            size_t slen = min((size_t)(end - p), sizeof(pass) - 1);
+            memcpy(pass, p, slen);
+            pass[slen] = '\0';
+          }
+        }
+        
+        // Parse timezone
+        p = strstr(valueBuf, "\"tz\":");
+        if (p) {
+          p += 5;
+          tz = atoi(p);
+        }
+        
+        // Parse weather key
+        p = strstr(valueBuf, "\"wk\":\"");
+        if (p) {
+          p += 6;
+          char* end = strchr(p, '"');
+          if (end) {
+            size_t slen = min((size_t)(end - p), sizeof(wk) - 1);
+            memcpy(wk, p, slen);
+            wk[slen] = '\0';
+          }
+        }
+        
+        // Parse weather location
+        p = strstr(valueBuf, "\"wl\":\"");
+        if (p) {
+          p += 6;
+          char* end = strchr(p, '"');
+          if (end) {
+            size_t slen = min((size_t)(end - p), sizeof(wl) - 1);
+            memcpy(wl, p, slen);
+            wl[slen] = '\0';
+          }
+        }
+        
+        // Parse brightness
+        p = strstr(valueBuf, "\"brightness\":");
+        if (p) {
+          p += 13;
+          brightness = atoi(p);
+        }
+        
+        // Parse theme
+        p = strstr(valueBuf, "\"theme\":");
+        if (p) {
+          p += 8;
+          theme = atoi(p);
+        }
+        
+        // Apply parsed values
+        if (strstr(valueBuf, "\"ssid\"") && strstr(valueBuf, "\"password\"")) {
+          ConfigSaveWifi(ssid, pass);
           Serial.println("[BLE] WiFi config saved");
         }
         
-        if (tzStart > 4 && tzEnd > tzStart) {
-          int tz = value.substring(tzStart, tzEnd).toInt();
+        if (strstr(valueBuf, "\"tz\":")) {
           ConfigSaveTimezone(tz);
-          Serial.println("[BLE] Timezone saved: " + String(tz));
+          Serial.printf("[BLE] Timezone saved: %d\n", tz);
         }
         
-        if (wkStart > 5 && wlStart > 5) {
-          String wk = value.substring(wkStart, wkEnd);
-          String wl = value.substring(wlStart, wlEnd);
-          ConfigSaveWeather(wk.c_str(), wl.c_str());
+        if (strstr(valueBuf, "\"wk\":") && strstr(valueBuf, "\"wl\":")) {
+          ConfigSaveWeather(wk, wl);
           Serial.println("[BLE] Weather config saved");
         }
         
-        if (brStart > 12 && brEnd > brStart) {
-          uint8_t brightness = value.substring(brStart, brEnd).toInt();
+        if (strstr(valueBuf, "\"brightness\":")) {
           ConfigSaveContrast(brightness);
           DisplaySetContrast(brightness);
-          Serial.println("[BLE] Brightness saved: " + String(brightness));
+          Serial.printf("[BLE] Brightness saved: %d\n", brightness);
         }
         
-        if (themeStart > 7 && themeEnd > themeStart) {
-          uint8_t theme = value.substring(themeStart, themeEnd).toInt();
+        if (strstr(valueBuf, "\"theme\":")) {
           TimeSetTheme((DisplayTheme_t)theme);
-          Serial.println("[BLE] Theme saved: " + String(theme));
+          Serial.printf("[BLE] Theme saved: %d\n", theme);
         }
         
         BleSendStatus(); // Send updated status
@@ -169,17 +223,22 @@ void BleSendStatus() {
   uint8_t theme = 0;
   ConfigLoadTheme(&theme);
   
-  // Build JSON status  
-  String status = "{\"battery\":" + String(battery) + 
-                  ",\"wifiConnected\":" + (wifiConn ? "true" : "false") +
-                  ",\"wifiSsid\":\"" + String(ssid) + "\"" +
-                  ",\"timezone\":" + String(tz) +
-                  ",\"brightness\":" + String(brightness) +
-                  ",\"theme\":" + String(theme) +
-                  ",\"firmwareVersion\":\"" FIRMWARE_VERSION "\"}";
-
+  // Use static buffer to avoid heap allocation in BLE callback context
+  // This prevents crashes during active audio streaming
+  static char statusBuf[256];
+  snprintf(statusBuf, sizeof(statusBuf),
+    "{\"battery\":%u,\"wifiConnected\":%s,\"wifiSsid\":\"%s\","
+    "\"timezone\":%d,\"brightness\":%u,\"theme\":%u,"
+    "\"firmwareVersion\":\"" FIRMWARE_VERSION "\"}",
+    battery,
+    wifiConn ? "true" : "false",
+    ssid,
+    tz,
+    brightness,
+    theme
+  );
   
-  pStatusChar->setValue(status.c_str());
+  pStatusChar->setValue(statusBuf);
   if (deviceConnected) {
     pStatusChar->notify();
   }
@@ -195,6 +254,8 @@ void BleLoop() {
   }
   if (deviceConnected && !oldDeviceConnected) {
     oldDeviceConnected = deviceConnected;
+    // Small delay to let BLE stack stabilize after connection
+    delay(100);
     BleSendStatus(); // Send initial status on connect
   }
 }

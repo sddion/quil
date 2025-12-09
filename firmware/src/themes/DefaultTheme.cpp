@@ -21,9 +21,9 @@ void DefaultThemeRender(int hour, int minute, const char* dateStr, const char* d
   
   display.setTextColor(SSD1306_WHITE);
   display.setTextSize(1);
-  display.setCursor(80, 6);
+  display.setCursor(80, 2);
   display.print(condStr);
-  display.setCursor(80,20);
+  display.setCursor(80,11);
   display.print(tempStr);
   
   // Separator lines
