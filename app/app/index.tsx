@@ -30,12 +30,11 @@ import { useUpdate } from '@/utils/UpdateContext';
 import { downloadAndInstallUpdate, DownloadProgress } from '@/utils/updater';
 import { VOICE_OPTIONS, LANGUAGE_OPTIONS } from '@/constants/voice';
 import { TIMEZONE_DATA, TIMEZONE_REGIONS, POPULAR_TIMEZONES, getTimezoneLabel } from '@/constants/timezone';
-import { Mic, Globe, Clock } from 'lucide-react-native';
+import { Mic, Globe, Clock, Server } from 'lucide-react-native';
 import { homeStyles as styles } from '@/styles/index';
 import {
   Connection,
   DeviceStatus,
-  QuickActions,
 } from '@/components/home';
 import { useDevice } from '@/hooks/use-device';
 
@@ -80,6 +79,7 @@ export default function HomeScreen() {
   const voiceId = settings.voiceId;
   const language = settings.language;
 
+
   const setWifiSSID = (value: string) => updateSettings({ wifiSSID: value });
   const setWifiPassword = (value: string) => updateSettings({ wifiPassword: value });
   const setTimezone = (value: string) => updateSettings({ timezone: value });
@@ -110,8 +110,40 @@ export default function HomeScreen() {
     } else if (connectionState === 'disconnected') {
       lastConnectedDeviceRef.current = null;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connectionState, deviceIp]);
+
+  // Sync settings from device when connected
+  useEffect(() => {
+    if (connectionState === 'connected' && deviceStatus) {
+      // Find timezone ID from offset
+      const findTzId = (offsetSec: number) => {
+        // Try to keep current ID if it matches offset
+        const currentTz = POPULAR_TIMEZONES.find(t => t.value === settings.timezone);
+        if (currentTz && currentTz.offset * 3600 === offsetSec) return settings.timezone;
+
+        // Otherwise find first match
+        const found = POPULAR_TIMEZONES.find(t => t.offset * 3600 === offsetSec);
+        if (found) return found.value;
+        
+        // Check all regions
+        for (const region of Object.values(TIMEZONE_DATA.regions)) {
+          const rFound = region.find(t => t.offset * 3600 === offsetSec);
+          if (rFound) return rFound.value;
+        }
+        return 'UTC';
+      };
+
+      const themeMapRev: Record<number, string> = { 0: 'default', 1: 'compact', 2: 'modern', 3: 'minimal', 4: 'retro' };
+
+      updateSettings({
+        brightness: deviceStatus.brightness,
+        selectedTheme: themeMapRev[deviceStatus.theme] ?? 'default',
+        timezone: findTzId(deviceStatus.timezone),
+        serverUrl: deviceStatus.serverUrl ?? settings.serverUrl,
+        lastSyncedAt: Date.now(),
+      });
+    }
+  }, [connectionState, deviceStatus?.timezone, deviceStatus?.brightness, deviceStatus?.theme, deviceStatus?.serverUrl]);
 
   useEffect(() => {
     if (currentNotification) {
@@ -136,14 +168,30 @@ export default function HomeScreen() {
 
     const themeMap: Record<string, number> = { default: 0, compact: 1, modern: 2, minimal: 3, retro: 4 };
 
+
+    // Calculate timezone offset in seconds
+    let tzOffset = 0;
+    const findTz = (val: string) => {
+      const popular = POPULAR_TIMEZONES.find(t => t.value === val);
+      if (popular) return popular;
+      for (const region of Object.values(TIMEZONE_DATA.regions)) {
+        const found = region.find(t => t.value === val);
+        if (found) return found;
+      }
+      return null;
+    };
+    const tzData = findTz(settings.timezone);
+    if (tzData) tzOffset = tzData.offset * 3600;
+
     const config = {
       ssid: settings.wifiSSID,
       password: settings.wifiPassword,
-      tz: parseInt(settings.timezone) || 0,
+      tz: tzOffset,
       brightness: settings.brightness,
       theme: themeMap[settings.selectedTheme] ?? 0,
       wk: settings.weatherAPIKey,
       wl: settings.weatherLocation,
+      server_url: settings.serverUrl,
     };
 
     await sendConfiguration(config);
@@ -169,17 +217,6 @@ export default function HomeScreen() {
     }
   };
 
-
-  const handleQuickAction = async (action: string) => {
-    if (connectionState !== 'connected') return;
-
-    const success = await sendCommand(action);
-    if (success) {
-      showNotification('success', 'Command Sent', `${action} executed successfully`);
-    } else {
-      showNotification('error', 'Command Failed', `Failed to execute ${action}`);
-    }
-  };
 
   const handleFactoryReset = () => {
     if (connectionState !== 'connected') return;
@@ -311,7 +348,6 @@ export default function HomeScreen() {
           {isConnected && deviceStatus && (
             <>
               <DeviceStatus deviceStatus={deviceStatus} />
-              <QuickActions onQuickAction={handleQuickAction} />
             </>
           )}
 
@@ -340,6 +376,19 @@ export default function HomeScreen() {
                   secureTextEntry
                   editable={isConnected}
                 />
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>SERVER CONFIGURATION</Text>
+            <View style={styles.formCard}>
+              <View style={styles.inputGroup}>
+                <View style={styles.inputLabelRow}>
+                  <Server size={16} color="#00bfff" />
+                  <Text style={styles.inputLabel}>Server URL</Text>
+                </View>
+              
               </View>
             </View>
           </View>

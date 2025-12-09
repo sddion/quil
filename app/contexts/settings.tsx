@@ -12,6 +12,7 @@ export type AppSettings = {
   selectedTheme: string;
   voiceId: string;
   language: string;
+  serverUrl: string;
   lastSyncedAt: number | null;
 };
 
@@ -27,6 +28,7 @@ const defaultSettings: AppSettings = {
   selectedTheme: 'default',
   voiceId: 'coral',
   language: 'en',
+  serverUrl: '',
   lastSyncedAt: null,
 };
 

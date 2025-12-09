@@ -29,8 +29,7 @@
         "android.permission.INTERNET",
         "android.permission.REQUEST_INSTALL_PACKAGES"
       ],
-      "softwareKeyboardLayoutMode": "pan",
-      "usesCleartextTraffic": true
+      "softwareKeyboardLayoutMode": "pan"
     },
     "plugins": [
       [
@@ -57,6 +56,11 @@
       "typedRoutes": true
     },
     "jsEngine": "hermes",
+    "web": {
+      "bundler": "metro",
+      "output": "server",
+      "favicon": "./assets/images/AppIcons/playstore.png"
+    },
     "runtimeVersion": "2.1.1",
     "extra": {
       "router": {

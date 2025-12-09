@@ -8,11 +8,18 @@ void DiagInit() {
   last_check = millis();
 }
 
+#include "../../modules/Connectivity.h"
+
 void DiagUpdate() {
   unsigned long now = millis();
   if (now - last_check < HEAP_CHECK_MS) return;
   last_check = now;
-  Serial.printf("Heap: %u | Uptime: %lu\n", DiagFreeHeap(), DiagUptime());
+  
+  String ip = WifiGetIp();
+  const char* mode = WifiIsApMode() ? "AP" : (WifiIsConnected() ? "STA" : "DISC");
+  
+  Serial.printf("Heap: %u | Uptime: %lu | WiFi: %s | IP: %s\n", 
+    DiagFreeHeap(), DiagUptime(), mode, ip.c_str());
 }
 
 uint32_t DiagFreeHeap() {

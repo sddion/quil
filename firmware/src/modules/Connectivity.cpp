@@ -1,14 +1,6 @@
+#include "config.h"
 #include "Connectivity.h"
-#include "ConfigStore.h" // Will be moved later, but include path needs to be resolved
-#include "config.h" // Root include 
-// We need to be careful with paths. Original was ../h/ConfigStore.h. 
-// If we move everything to src/modules/, then "ConfigStore.h" will work if it's there.
-// For now, I will assume I'm moving ConfigStore too, or I'll fix includes later.
-// Let's use internal relative paths assuming flat structure or correct relative for now.
-// Since ConfigStore is not yet moved, it's still in modules/h/ConfigStore.h relative to modules/Connectivity.cpp
-// But wait, I'm writing to src/modules/Connectivity.cpp.
-// So relative path to src/modules/h/ConfigStore.h would be "h/ConfigStore.h"? No, I'm finding it hard to predict without moving everything.
-// Best strategy: Use "ConfigStore.h" and ensure I move ConfigStore.h to src/modules/ as well.
+#include "ConfigStore.h"
 
 #include <WiFi.h>
 #include <HTTPClient.h>

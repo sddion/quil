@@ -12,6 +12,7 @@ export type DeviceStatus = {
   timezone: number;
   brightness: number;
   theme: number;
+  serverUrl?: string;
 };
 
 export type DeviceConfig = {
@@ -22,6 +23,7 @@ export type DeviceConfig = {
   theme?: number;
   wk?: string; // weather api key
   wl?: string; // weather location
+  server_url?: string; // WebSocket server URL
 };
 
 export type ConnectionState = 'disconnected' | 'scanning' | 'connecting' | 'connected';

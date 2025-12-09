@@ -34,7 +34,10 @@ function HandleHttpRequest(Request: Request): Response {
             Timestamp: new Date().toISOString(),
         }), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+            },
         });
     }
 
@@ -64,16 +67,11 @@ function StartServer(): void {
         throw new Error("Server configuration invalid. Check environment variables.");
     }
 
-    console.log("╔════════════════════════════════════════╗");
-    console.log("║       🤖 Quil Voice Server             ║");
-    console.log("╠════════════════════════════════════════╣");
-    console.log(`║  Host: ${ServerHost.padEnd(30)} ║`);
-    console.log(`║  Port: ${String(ServerPort).padEnd(30)} ║`);
-    console.log(`║  Mode: ${(IsDevMode ? "Development" : "Production").padEnd(30)} ║`);
-    console.log("╚════════════════════════════════════════╝");
-    console.log("");
-    console.log(`[Server] WebSocket endpoint: ws://${ServerHost}:${ServerPort}/ws`);
-    console.log("[Server] Ready for ESP32 connections...");
+    console.log(`Host: ${ServerHost.padEnd(30)}`);
+    console.log(`Port: ${String(ServerPort).padEnd(30)}`);
+    console.log(`Mode: ${(IsDevMode ? "Development" : "Production").padEnd(30)}`);
+    console.log(`WebSocket endpoint: ws://${ServerHost}:${ServerPort}/ws`);
+    console.log("Ready for ESP32 connections...");
 
     Deno.serve({
         hostname: ServerHost,

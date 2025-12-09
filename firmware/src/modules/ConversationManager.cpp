@@ -54,6 +54,9 @@ void ConversationLoop() {
   if (isMuted && AudioIsListening()) {
     AudioStopListening();
   }
+  
+  // Update Realtime Loop
+  RealtimeVoiceLoop();
 }
 
 void ConversationRender() {

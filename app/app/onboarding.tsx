@@ -36,12 +36,7 @@ const slides = [
     description: 'Set up WiFi, timezone, weather, display brightness, and choose from multiple themes for your Quil.',
     color: '#00ff88',
   },
-  {
-    icon: RefreshCw,
-    title: 'Quick Actions',
-    description: 'Sync time, update weather, restart device, or check for firmware updates with a single tap.',
-    color: '#FFD700',
-  },
+
   {
     icon: CheckCircle,
     title: 'Ready to Go!',

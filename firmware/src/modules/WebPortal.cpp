@@ -80,8 +80,10 @@ void WebPortalStart() {
   DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
   DefaultHeaders::Instance().addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   DefaultHeaders::Instance().addHeader("Access-Control-Allow-Headers", "Content-Type");
+  DefaultHeaders::Instance().addHeader("Access-Control-Allow-Private-Network", "true");
   
   server.on("/api/scan", HTTP_GET, handleScan);
+  server.on("/api/scan", HTTP_OPTIONS, [](AsyncWebServerRequest *request){ request->send(200); });
   
   server.on("/api/connect", HTTP_POST, 
     [](AsyncWebServerRequest *request) {},
@@ -97,6 +99,8 @@ void WebPortalStart() {
     }
   );
   
+  server.on("/api/connect", HTTP_OPTIONS, [](AsyncWebServerRequest *request){ request->send(200); });
+
   // Config endpoint for app to send settings
   server.on("/api/config", HTTP_POST, 
     [](AsyncWebServerRequest *request) {},
@@ -170,7 +174,10 @@ void WebPortalStart() {
     }
   );
   
+  server.on("/api/config", HTTP_OPTIONS, [](AsyncWebServerRequest *request){ request->send(200); });
+
   server.on("/api/status", HTTP_GET, handleStatus);
+  server.on("/api/status", HTTP_OPTIONS, [](AsyncWebServerRequest *request){ request->send(200); });
   
   // Captive portal detection endpoints
   server.on("/generate_204", HTTP_GET, handleRoot);        // Android

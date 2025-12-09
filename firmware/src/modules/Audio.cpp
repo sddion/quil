@@ -1,6 +1,7 @@
 #include "Audio.h"
 #include "hal/h/I2S.h"
 #include "config.h"
+#include "ConfigStore.h"
 #include "pins.h" 
 #include <WiFi.h>
 #include <WebSocketsClient.h>
@@ -244,33 +245,27 @@ void RealtimeVoiceInit() {
   rt_IsListening = false;
   rt_Volume = 100;
 }
-
 bool RealtimeVoiceConnect(const char* ServerUrl) {
-  if (rt_IsConnected) {
-    Serial.println("[RealtimeVoice] Already connected");
-    return true;
-  }
-  
-  size_t freeHeap = ESP.getFreeHeap();
-  Serial.printf("[RealtimeVoice] Free heap: %d bytes\n", freeHeap);
-  if (freeHeap < 20000) {
-    Serial.println("[RealtimeVoice] Not enough memory for SSL");
+  static char loadUrl[64];
+  if (!ConfigLoadServerUrl(loadUrl)) {
+    Serial.println("[RealtimeVoice] No server URL configured");
     return false;
   }
   
   Serial.print("[RealtimeVoice] Connecting to: ");
-  Serial.println(ServerUrl);
+  Serial.println(loadUrl);
   
   static char Host[64];
   static char Path[32];
-  uint16_t Port = 443;
-  bool UseSSL = true;
+  uint16_t Port = 8000;
+  bool UseSSL = false;
   
-  const char* p = ServerUrl;
+  const char* p = loadUrl;
   
   if (strncmp(p, "wss://", 6) == 0) {
     UseSSL = true;
     p += 6;
+    Port = 443;
   } else if (strncmp(p, "ws://", 5) == 0) {
     UseSSL = false;
     p += 5;
@@ -300,7 +295,7 @@ bool RealtimeVoiceConnect(const char* ServerUrl) {
     strcpy(Path, "/ws");
   }
   
-  Serial.printf("[RealtimeVoice] Host: %s, Port: %d, Path: %s\n", Host, Port, Path);
+  Serial.printf("[RealtimeVoice] Host: %s, Port: %d, Path: %s, SSL: %s\n", Host, Port, Path, UseSSL ? "Yes" : "No");
   
   WsClient.onEvent(OnWsEvent);
   WsClient.setReconnectInterval(5000);
@@ -311,7 +306,6 @@ bool RealtimeVoiceConnect(const char* ServerUrl) {
   } else {
     WsClient.begin(Host, Port, Path);
   }
-  
   return true;
 }
 

@@ -46,9 +46,6 @@
 // Firmware version
 #define FIRMWARE_VERSION "1.1.0"
 
-// OTA GitHub configuration
-#define GITHUB_USER "sddion"
-#define GITHUB_REPO "quil"
-
 // Quil Server
-#define QUIL_SERVER_URL "wss://quil-v6m7yqzgeggr.deno.dev/ws"
+#define QUIL_SERVER_URL "wss://mymyquilbot.deno.dev/ws"
+
