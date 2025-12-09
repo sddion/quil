@@ -2,7 +2,7 @@
 
 Quil is an interactive, voice-activated desktop companion robot built on the ESP32 platform. It uses OpenAI APIs for voice interactions, drives expressive animations on a 128x64 OLED display, and accepts touch input via TTP223 capacitive sensors.
 
-![Quil](https://github.com/sddion/quil.site/blob/main/public/android-chrome-512x512.png)
+![Quil](https://github.com/sddion/quil/blob/main/app/assets/images/AppIcons/playstore.png)
 
 ## Features
 
