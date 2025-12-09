@@ -43,8 +43,9 @@ function base64Encode(str: string): string {
       String.fromCharCode(parseInt(p1, 16))
     );
     return btoa(encoded);
-  } catch {
-    return str;
+  } catch (error) {
+    console.error('[BLE Manager] Failed to encode base64:', error);
+    throw new Error('Failed to encode base64 data');
   }
 }
 

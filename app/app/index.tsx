@@ -22,13 +22,10 @@ import {
   MapPin,
   Key,
   AlertTriangle,
-  Menu,
-  HelpCircle,
 } from 'lucide-react-native';
 import { useBLE } from '@/hooks/use-ble';
 import type { BLEDevice } from '@/lib/ble-manager';
 import { useSettings } from '@/contexts/settings';
-import { useDevices } from '@/contexts/devices';
 import { useNotifications } from '@/contexts/notifications';
 import { useUpdate } from '@/utils/UpdateContext';
 import { downloadAndInstallUpdate, DownloadProgress } from '@/utils/updater';
@@ -63,7 +60,6 @@ export default function HomeScreen() {
   } = useBLE();
 
   const { settings, updateSettings, markSynced } = useSettings();
-  const { saveDevice } = useDevices();
   const { showNotification, currentNotification } = useNotifications();
   const { updateInfo } = useUpdate();
 
@@ -112,7 +108,6 @@ export default function HomeScreen() {
       // Only show notification once per device connection
       if (lastConnectedDeviceRef.current !== connectedDevice.id) {
         lastConnectedDeviceRef.current = connectedDevice.id;
-        saveDevice(connectedDevice.id, connectedDevice.name);
         showNotification('success', 'Connected', `Connected to ${connectedDevice.name}`);
       }
     } else if (connectionState === 'disconnected') {
@@ -288,20 +283,6 @@ export default function HomeScreen() {
           <View>
             <Text style={styles.logo}>QUIL</Text>
             <Text style={styles.subtitle}>ROBOT CONTROL</Text>
-          </View>
-          <View style={styles.headerActions}>
-            <TouchableOpacity
-              style={styles.headerButton}
-              onPress={() => router.push('/devices')}
-            >
-              <Menu size={24} color="#00bfff" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.headerButton}
-              onPress={() => router.push('/help')}
-            >
-              <HelpCircle size={24} color="#00bfff" />
-            </TouchableOpacity>
           </View>
         </View>
 

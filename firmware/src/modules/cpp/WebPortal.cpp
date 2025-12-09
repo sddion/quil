@@ -75,7 +75,13 @@ void WebPortalStart() {
     [](AsyncWebServerRequest *request) {},
     NULL,
     [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
-      handleConnect(request, data, len);
+      if (index == 0 && len == total) {
+        // Simple case: entire body in one chunk
+        handleConnect(request, data, len);
+      } else {
+        // For chunked bodies, would need accumulation buffer
+        request->send(400, "application/json", "{\"success\":false,\"message\":\"Request too large\"}");
+      }
     }
   );
   
@@ -214,10 +220,14 @@ static void handleConnect(AsyncWebServerRequest *request, uint8_t *data, size_t 
 static void handleStatus(AsyncWebServerRequest *request) {
   JsonDocument doc;
   
-  if (WiFi.status() == WL_CONNECTED && !pendingSsid.isEmpty()) {
+  if (WiFi.status() == WL_CONNECTED && WiFi.SSID() == pendingSsid) {
     doc["connected"] = true;
     doc["ip"] = WiFi.localIP().toString();
     doc["ssid"] = WiFi.SSID();
+  } else if (WiFi.status() == WL_CONNECTED) {
+    // Connected but not to pending network
+    doc["connected"] = false;
+    doc["failed"] = false;
   } else if (WiFi.status() == WL_CONNECT_FAILED || 
              WiFi.status() == WL_NO_SSID_AVAIL) {
     doc["connected"] = false;

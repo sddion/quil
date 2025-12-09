@@ -4,6 +4,7 @@
 #include "types.h"
 #include "hal/h/I2C.h"
 #include "hal/h/Display.h"
+#include "hal/h/NativeTouch.h"
 #include "core/h/StateMachine.h"
 #include "core/h/Diagnostics.h"
 #include "modules/h/ConfigStore.h"
@@ -18,11 +19,8 @@
 #include "modules/h/LlmBridge.h"
 #include "modules/h/AnimationManager.h"
 #include "modules/h/BatteryManager.h"
-#include "hal/h/Ttp223.h"
+#include "modules/h/ConversationManager.h"
 #include "modes/h/Time.h"
-
-#include "modes/h/Chat.h"
-#include "modes/h/WifiInfo.h"
 #include "modes/h/SetupScreen.h"
 #include "core/h/BootLoader.h"
 
@@ -117,17 +115,16 @@ void setup() {
   VoiceInit();
   WakeInit();
   BridgeInit();
+  ConversationInit();
   
   // Stage 5: Display
   BootLoaderShowStage(BOOT_STAGE_DISPLAY, false);
-  ChatInit();
-  WifiInfoInit();
+  // Time mode is the only display mode now
   
   // Stage 6: Update Check
   BootLoaderShowStage(BOOT_STAGE_UPDATE, false);
   if (WifiHasInternet()) {
-    // Check for updates in background (don't block)
-    // OtaCheckGithubUpdate();  // Uncomment when ready to auto-update
+    // Check for updates in background
   }
   
   // Stage 7: Complete
@@ -135,8 +132,8 @@ void setup() {
   delay(500);
   BootLoaderComplete();
   
-  // Force initial render to Time mode
-  StateSetMode(MODE_TIME_DATE);
+  // Start in clock mode
+  StateSetMode(MODE_CLOCK);
   TimeForceRender();
   
   Serial.println("Quil ready");
@@ -147,84 +144,82 @@ void loop() {
   
   // === SETUP MODE: First boot - waiting for WiFi configuration ===
   if (mode == MODE_SETUP) {
-    BleLoop();           // Handle BLE commands for WiFi config
-    WifiPortalLoop();    // Handle web portal requests
+    BleLoop();
+    WifiPortalLoop();
     
-    // Check if WiFi credentials have been configured (via BLE or web portal)
     if (WifiHasSavedCredentials() && WifiIsConnected()) {
       Serial.println("[Setup] WiFi configured! Restarting...");
-      // Stop portal
       WifiStopPortal();
-      // Send confirmation to BLE client before restart
       BleNotifySetupComplete();
       delay(1000);
       ESP.restart();
     }
     
-    // Update and render setup screen
     SetupScreenUpdate();
     delay(50);
     return;
   }
   
-  // === NORMAL MODE: Full operation ===
+  // === NORMAL MODE ===
   
-  // WiFi reconnection task - handles automatic reconnection and internet checks
+  // Background tasks
   WifiReconnectTask();
-  
   StateUpdate();
   DiagUpdate();
   OtaHandle();
   BleLoop();
   
-  TtpUpdate();
-  
-  if (TtpHasEvent(TOUCH_SENSOR_A)) {
+  // Touch handling (mute toggle)
+  NativeTouchUpdate();
+  if (NativeTouchHasTap()) {
     GestureType gest = GestureDetect(0, millis());
     if (gest != GESTURE_NONE) {
-      ActionsHandle(gest, StateGetMode());
+      ActionsHandle(gest, mode);
     }
   }
   
-  if (WakeDetect()) {
-    BridgeSendCommand("wake_quil");
-    VoiceStartListening();
-  }
-  
-  if (VoiceIsListening()) {
-    uint8_t audio[256];
-    size_t len = VoiceReadBuffer(audio, sizeof(audio));
-    if (len > 0) {
-      BridgeSendAudio(audio, len);
-    }
-  }
-  
-  BridgeHandleResponse();
-  
+  // Animation playback
   if (AnimIsPlaying()) {
     AnimUpdate();
     delay(10);
     return;
   }
   
-  switch(mode) {
-    case MODE_TIME_DATE:
-      TimeUpdate();
-      TimeRender();
-      break;
-
-    case MODE_CHAT:
-      ChatUpdate();
-      ChatRender();
-      break;
-      
-    case MODE_WIFI_INFO:
-      WifiInfoUpdate();
-      WifiInfoRender();
-      break;
-      
-    default:
-      break;
+  // === CONVERSATION MODE ===
+  if (mode == MODE_CONVERSATION) {
+    ConversationLoop();
+    
+    // Stream audio to server
+    if (VoiceIsListening()) {
+      uint8_t audio[256];
+      size_t len = VoiceReadBuffer(audio, sizeof(audio));
+      if (len > 0) {
+        BridgeSendAudio(audio, len);
+      }
+    }
+    
+    BridgeHandleResponse();
+    ConversationRender();
+    
+    // Check timeout - return to clock
+    if (ConversationTimedOut()) {
+      ConversationEnd();
+      StateSetMode(MODE_CLOCK);
+    }
+  }
+  
+  // === CLOCK MODE (default) ===
+  else if (mode == MODE_CLOCK) {
+    // Always listening for wake word
+    if (WakeDetect()) {
+      Serial.println("[Main] Wake detected - starting conversation");
+      StateSetMode(MODE_CONVERSATION);
+      ConversationStart();
+      BridgeSendCommand("wake_quil");
+    }
+    
+    TimeUpdate();
+    TimeRender();
   }
   
   delay(10);

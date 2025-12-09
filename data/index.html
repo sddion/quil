@@ -39,7 +39,7 @@
             <h1>Quil Setup</h1>
             <p class="subtitle">Connect your device to WiFi</p>
 
-            <div id="status" class="status hidden"></div>
+            <div id="status" class="status hidden" aria-live="polite" aria-atomic="true"></div>
 
             <form id="wifi-form">
                 <div class="form-group">
@@ -53,6 +53,7 @@
                             id="refresh-btn"
                             class="refresh-btn"
                             title="Refresh networks"
+                            aria-label="Refresh WiFi networks"
                         >
                             &#8635;
                         </button>
@@ -60,13 +61,15 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="password">Password</label>
                     <input
                         type="password"
                         id="password"
                         name="password"
                         placeholder="Enter WiFi password"
-                    >
+                        required
+                    <button type="button" id="toggle-pass" class="toggle-pass" aria-label="Show password">
+                        Show
+                    </button>
                     <button type="button" id="toggle-pass" class="toggle-pass">
                         Show
                     </button>

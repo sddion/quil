@@ -21,5 +21,5 @@
 #define PIN_UART2_TX 17
 #define PIN_UART2_RX 16
 
-// TTP223 Capacitive Touch Sensor (Active-HIGH)
-#define PIN_TOUCH_A 34  // GPIO34 - ADC1_CH6 (input only)
+// Native ESP32 Capacitive Touch (T6)
+#define PIN_TOUCH 14  // GPIO14 - T6 native touch pin

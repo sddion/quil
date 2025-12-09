@@ -6,7 +6,6 @@ import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BLEProvider } from "@/hooks/use-ble";
 import { SettingsProvider } from "@/contexts/settings";
-import { DevicesProvider } from "@/contexts/devices";
 import { NotificationsProvider } from "@/contexts/notifications";
 import { UpdateProvider } from "@/utils/UpdateContext";
 
@@ -24,9 +23,7 @@ function RootLayoutNav() {
       }}
     >
       <Stack.Screen name="index" />
-      <Stack.Screen name="devices" options={{ presentation: 'modal' }} />
       <Stack.Screen name="onboarding" options={{ presentation: 'modal' }} />
-      <Stack.Screen name="help" options={{ presentation: 'modal' }} />
       <Stack.Screen name="+not-found" />
     </Stack>
   );
@@ -43,11 +40,9 @@ export default function RootLayout() {
         <UpdateProvider>
           <NotificationsProvider>
             <SettingsProvider>
-              <DevicesProvider>
-                <BLEProvider>
-                  <RootLayoutNav />
-                </BLEProvider>
-              </DevicesProvider>
+              <BLEProvider>
+                <RootLayoutNav />
+              </BLEProvider>
             </SettingsProvider>
           </NotificationsProvider>
         </UpdateProvider>

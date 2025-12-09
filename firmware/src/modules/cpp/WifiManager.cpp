@@ -239,6 +239,8 @@ bool WifiStartPortal() {
   // Initialize and start web portal
   if (!WebPortalInit()) {
     Serial.println("[WiFi] Failed to init web portal");
+    WiFi.softAPdisconnect(true);
+    ap_mode = false;
     return false;
   }
   
@@ -249,12 +251,15 @@ bool WifiStartPortal() {
   return true;
 }
 
-void WifiStopPortal() {
+bool WifiStopPortal() {
   if (portal_mode) {
     WebPortalStop();
+    WiFi.softAPdisconnect(true);
+    ap_mode = false;
     portal_mode = false;
     Serial.println("[WiFi] Portal stopped");
   }
+  return true;
 }
 
 bool WifiIsPortalMode() {

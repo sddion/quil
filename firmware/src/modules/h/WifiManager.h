@@ -9,7 +9,7 @@ bool WifiInit();
 bool WifiConnect(const char* ssid, const char* pass);
 bool WifiStartAp();
 bool WifiStartPortal();  // Start AP mode with web configuration portal
-void WifiStopPortal();   // Stop portal and switch to STA mode
+bool WifiStopPortal();   // Stop portal and switch to STA mode
 bool WifiIsConnected();
 bool WifiHasInternet();
 bool WifiIsApMode();

@@ -1,24 +1,15 @@
 #include "../h/GestureManager.h"
-#include "hal/h/Ttp223.h"
+#include "hal/h/NativeTouch.h"
 
 void GestureInit() {
-  TtpInit();
+  NativeTouchInit();
 }
 
 GestureType GestureDetect(uint16_t unused, unsigned long unused_ts) {
-  TtpUpdate();
+  NativeTouchUpdate();
   
-  if (TtpHasEvent(TOUCH_SENSOR_A)) {
-    TouchEventData event = TtpGetEvent(TOUCH_SENSOR_A);
-    
-    switch (event.event) {
-      case TOUCH_EVENT_SINGLE_TAP:
-        return GESTURE_SINGLE_TAP;
-      case TOUCH_EVENT_DOUBLE_TAP:
-        return GESTURE_DOUBLE_TAP;
-      default:
-        break;
-    }
+  if (NativeTouchHasTap()) {
+    return GESTURE_SINGLE_TAP;
   }
   
   return GESTURE_NONE;
