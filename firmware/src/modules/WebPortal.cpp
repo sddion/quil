@@ -194,6 +194,7 @@ void WebPortalStart() {
   Serial.println("[WebPortal] Web server started");
   if (WiFi.status() == WL_CONNECTED) {
     Serial.printf("[WebPortal] Web Server URL: http://%s\n", WiFi.localIP().toString().c_str());
+
   } else {
     Serial.printf("[WebPortal] Portal URL: http://%s\n", WiFi.softAPIP().toString().c_str());
   }
@@ -240,37 +241,47 @@ static void handleRoot(AsyncWebServerRequest *request) {
 }
 
 static void handleScan(AsyncWebServerRequest *request) {
-  Serial.println("[WebPortal] Scanning WiFi networks...");
+  int n = WiFi.scanComplete();
   
-  int n = WiFi.scanNetworks();
-  
-  JsonDocument doc;
-  JsonArray networks = doc["networks"].to<JsonArray>();
-  
-  for (int i = 0; i < n; i++) {
-    // Skip duplicates
-    bool duplicate = false;
-    for (int j = 0; j < i; j++) {
-      if (WiFi.SSID(i) == WiFi.SSID(j)) {
-        duplicate = true;
-        break;
-      }
-    }
-    if (duplicate || WiFi.SSID(i).length() == 0) continue;
+  if (n == -2) {
+    // Scan not running, start it
+    WiFi.scanNetworks(true); // Async scan
+    request->send(200, "application/json", "{\"networks\":[]}"); // Return empty for now
+    Serial.println("[WebPortal] Async Scan Started");
+  } else if (n == -1) {
+    // Scan in progress
+    request->send(200, "application/json", "{\"networks\":[]}");
+    Serial.println("[WebPortal] Scan in progress...");
+  } else {
+    // Scan completed
+    Serial.printf("[WebPortal] Scan done, found %d networks\n", n);
+    JsonDocument doc;
+    JsonArray networks = doc["networks"].to<JsonArray>();
     
-    JsonObject network = networks.add<JsonObject>();
-    network["ssid"] = WiFi.SSID(i);
-    network["rssi"] = WiFi.RSSI(i);
-    network["secure"] = (WiFi.encryptionType(i) != WIFI_AUTH_OPEN);
+    for (int i = 0; i < n; i++) {
+      // Skip duplicates logic...
+      bool duplicate = false;
+      for (int j = 0; j < i; j++) {
+        if (WiFi.SSID(i) == WiFi.SSID(j)) {
+          duplicate = true; 
+          break;
+        }
+      }
+      if (duplicate || WiFi.SSID(i).length() == 0) continue;
+      
+      JsonObject network = networks.add<JsonObject>();
+      network["ssid"] = WiFi.SSID(i);
+      network["rssi"] = WiFi.RSSI(i);
+      network["secure"] = (WiFi.encryptionType(i) != WIFI_AUTH_OPEN);
+    }
+    
+    // Clear scan results to allow next scan
+    WiFi.scanDelete();
+    
+    String response;
+    serializeJson(doc, response);
+    request->send(200, "application/json", response);
   }
-  
-  WiFi.scanDelete();
-  
-  String response;
-  serializeJson(doc, response);
-  
-  request->send(200, "application/json", response);
-  Serial.printf("[WebPortal] Found %d networks\n", networks.size());
 }
 
 static void handleConnect(AsyncWebServerRequest *request, uint8_t *data, size_t len) {
@@ -344,6 +355,15 @@ static void handleStatus(AsyncWebServerRequest *request) {
 }
 
 static void handleNotFound(AsyncWebServerRequest *request) {
+  String host = request->host();
+  String ip = WiFi.softAPIP().toString();
+  
+  // If we are already at the correct IP, do not redirect recursively
+  if (host.indexOf(ip) >= 0) {
+    request->send(404, "text/plain", "404: Not Found (File System Missing?)");
+    return;
+  }
+
   // Redirect all unknown requests to the portal
-  request->redirect("http://" + WiFi.softAPIP().toString() + "/");
+  request->redirect("http://" + ip + "/");
 }

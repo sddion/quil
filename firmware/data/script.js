@@ -72,31 +72,46 @@ document.addEventListener('DOMContentLoaded', function() {
     ssidSelect.disabled = true;
     refreshBtn.disabled = true;
     
-    try {
-      const response = await fetch('/api/scan');
-      const data = await response.json();
-      
-      ssidSelect.innerHTML = '<option value="">Select a network</option>';
-      
-      if (data.networks && data.networks.length > 0) {
-        // Sort by signal strength
-        data.networks.sort((a, b) => b.rssi - a.rssi);
-        
-        data.networks.forEach(network => {
-          const option = document.createElement('option');
-          option.value = network.ssid;
-          const signal = getSignalIcon(network.rssi);
-          const lock = network.secure ? '🔒' : '';
-          option.textContent = `${signal} ${network.ssid} ${lock}`;
-          ssidSelect.appendChild(option);
-        });
-      } else {
-        ssidSelect.innerHTML = '<option value="">No networks found</option>';
-      }
-    } catch (err) {
-      ssidSelect.innerHTML = '<option value="">Scan failed</option>';
+    let attempts = 0;
+    const maxAttempts = 15; // 30 seconds max (2s interval)
+
+    while (attempts < maxAttempts) {
+        try {
+            const response = await fetch('/api/scan');
+            const data = await response.json();
+            
+            if (data.networks && data.networks.length > 0) {
+                // Success - Populate List
+                ssidSelect.innerHTML = '<option value="">Select a network</option>';
+                
+                // Sort by signal
+                data.networks.sort((a, b) => b.rssi - a.rssi);
+                
+                data.networks.forEach(network => {
+                    const option = document.createElement('option');
+                    option.value = network.ssid;
+                    option.textContent = network.ssid + (network.rssi ? ` (${network.rssi}dBm)` : '');
+                    ssidSelect.appendChild(option);
+                });
+                
+                ssidSelect.disabled = false;
+                refreshBtn.disabled = false;
+                return; // Done
+            }
+            
+            // Empty list (Async scan running), wait and retry
+            attempts++;
+            await new Promise(r => setTimeout(r, 2000));
+            
+        } catch (err) {
+            // Network error, likely retry
+            attempts++;
+            await new Promise(r => setTimeout(r, 2000));
+        }
     }
     
+    // Timeout
+    ssidSelect.innerHTML = '<option value="">No networks found (Retrying...)</option>';
     ssidSelect.disabled = false;
     refreshBtn.disabled = false;
   }
@@ -169,10 +184,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  function getSignalIcon(rssi) {
-    if (rssi >= -50) return '▂▄▆█';
-    if (rssi >= -60) return '▂▄▆_';
-    if (rssi >= -70) return '▂▄__';
-    return '▂___';
-  }
 });

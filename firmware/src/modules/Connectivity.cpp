@@ -94,6 +94,7 @@ bool WifiConnect(const char* ssid, const char* pass) {
 bool WifiStartAp() {
   Serial.println("[WiFi] Starting Access Point mode");
   WiFi.mode(WIFI_AP);
+  WiFi.setTxPower(WIFI_POWER_8_5dBm); // Prevent brownouts
   
   bool result = WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASS);
   
@@ -273,6 +274,13 @@ void WifiPortalLoop() {
     Serial.print("[WiFi] IP: ");
     Serial.println(WiFi.localIP());
     
+    // Save the current running config
+    // Since we are connected, the current STA credentials are valid.
+    // However, we don't have easy access to them here unless we use WiFi.SSID() and password? 
+    // WiFi.psk() gives the password.
+    ConfigSaveWifi(WiFi.SSID().c_str(), WiFi.psk().c_str());
+    Serial.println("[WiFi] Credentials saved to persistent storage");
+
     wifi_connected = true;
     ap_mode = false; 
     internet_connected = WifiCheckInternet();
