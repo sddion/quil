@@ -84,7 +84,7 @@ export class EnergyVad {
     }
 
     private CalculateRMS(Chunk: Uint8Array): number {
-        // Assume PCM16 Little Endian
+        // PCM16 Little Endian
         let sum = 0;
         const numSamples = Chunk.length / 2;
         

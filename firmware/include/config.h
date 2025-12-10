@@ -48,5 +48,5 @@
 #define FIRMWARE_VERSION "1.1.0"
 
 // Quil Server
-#define QUIL_SERVER_URL "wss://mymyquilbot.deno.dev/ws"
+#define QUIL_SERVER_URL "wss://myquilbot-f12yc2ys80pc.deno.dev/ws"
 
