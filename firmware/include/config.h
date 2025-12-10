@@ -35,13 +35,14 @@
 #define NTP_UPDATE_MS 3600000  // Update every hour
 
 // Audio I2S pins
-#define I2S_MIC_BCK 26
+// Audio I2S pins (Verified)
+#define I2S_MIC_BCK 32
 #define I2S_MIC_WS 25
 #define I2S_MIC_DIN 33
 
-#define I2S_SPK_BCK 14
-#define I2S_SPK_WS 15
-#define I2S_SPK_DOUT 32
+#define I2S_SPK_BCK 27
+#define I2S_SPK_WS 26
+#define I2S_SPK_DOUT 23
 
 // Firmware version
 #define FIRMWARE_VERSION "1.1.0"

@@ -82,6 +82,13 @@ bool ConfigLoadContrast(uint8_t* level) {
   return true;
 }
 
+bool ConfigLoadServerUrl(char* url) {
+  String s = prefs.getString("server_url", QUIL_SERVER_URL);
+  if (s.length() == 0) return false;
+  strcpy(url, s.c_str());
+  return true;
+}
+
 void ConfigClear() {
   prefs.clear();
 }

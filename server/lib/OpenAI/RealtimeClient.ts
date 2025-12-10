@@ -81,9 +81,9 @@ export class RealtimeClient {
                 instructions: Config.Instructions ?? "",
                 input_audio_format: "pcm16",
                 output_audio_format: "pcm16",
-                input_audio_transcription: {
-                    model: Config.InputAudioTranscription?.Model ?? "whisper-1"
-                },
+                // input_audio_transcription: {
+                //     model: Config.InputAudioTranscription?.Model ?? "whisper-1"
+                // },
                 turn_detection: Config.TurnDetection ? {
                     type: Config.TurnDetection.Type,
                     threshold: Config.TurnDetection.Threshold,

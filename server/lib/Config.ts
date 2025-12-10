@@ -2,9 +2,9 @@
 
 // Quil Server Configuration
 
-export const OpenAiApiKey: string = Deno.env.get("OPENAI_API_KEY") ?? "";
+export const OpenAiApiKey: string = (Deno.env.get("OPENAI_API_KEY") ?? "").replace(/^["']|["']$/g, "");
 export const OpenAiRealtimeUrl: string = "wss://api.openai.com/v1/realtime";
-export const OpenAiModel: string = "gpt-4o-mini-realtime-preview-2024-12-17";
+export const OpenAiModel: string = "gpt-4o-mini-audio-preview";
 
 export const ServerHost: string = Deno.env.get("HOST") ?? "0.0.0.0";
 export const ServerPort: number = parseInt(Deno.env.get("PORT") ?? "8000");
@@ -119,8 +119,8 @@ export interface IVadConfig {
 
 export const VadConfig: IVadConfig = {
     Type: "server_vad",
-    Threshold: 0.4,
-    PrefixPaddingMs: 400,
-    SilenceDurationMs: 1000,
+    Threshold: 0.05,  // Reasonable for speech (~1600 RMS)
+    PrefixPaddingMs: 300,
+    SilenceDurationMs: 500,
 };
 

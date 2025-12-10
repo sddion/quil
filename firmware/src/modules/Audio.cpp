@@ -38,6 +38,19 @@ size_t AudioReadBuffer(uint8_t* buf, size_t len) {
   if (!audio_listening) return 0;
   
   size_t bytesRead = I2SReadMic(buf, len);
+
+  // AMPLIFY: Boost volume x32
+  if (bytesRead > 0) {
+      int16_t* samples = (int16_t*)buf;
+      size_t sampleCount = bytesRead / 2;
+      for (size_t i = 0; i < sampleCount; i++) {
+          int32_t val = samples[i];
+          val = val * 32; 
+          if (val > 32767) val = 32767;
+          if (val < -32768) val = -32768;
+          samples[i] = (int16_t)val;
+      }
+  }
   
   // Calculate RMS
   if (bytesRead >= 100) {
@@ -473,6 +486,19 @@ static void ProcessAudioChunk(uint8_t* Data, size_t Length) {
 
 static void StreamMicData() {
   size_t BytesRead = I2SReadMic(MicBuffer, AUDIO_BUFFER_SIZE);
+
+  // AMPLIFY: Boost volume x32
+  if (BytesRead > 0) {
+      int16_t* samples = (int16_t*)MicBuffer;
+      size_t sampleCount = BytesRead / 2;
+      for (size_t i = 0; i < sampleCount; i++) {
+          int32_t val = samples[i];
+          val = val * 32; 
+          if (val > 32767) val = 32767;
+          if (val < -32768) val = -32768;
+          samples[i] = (int16_t)val;
+      }
+  }
   
   if (BytesRead > 0) {
     WsClient.sendBIN(MicBuffer, BytesRead);

@@ -14,4 +14,5 @@ bool ConfigSaveTimezone(int offset_sec);
 bool ConfigLoadTimezone(int* offset_sec);
 bool ConfigSaveContrast(uint8_t level);
 bool ConfigLoadContrast(uint8_t* level);
+bool ConfigLoadServerUrl(char* url);
 void ConfigClear();
